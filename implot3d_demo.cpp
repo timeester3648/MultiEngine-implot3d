@@ -31,8 +31,13 @@
 
 // Helper to wire demo markers located in code to an interactive browser (e.g. imgui_explorer)
 #if IMGUI_VERSION_NUM >= 19263
-namespace ImGui { extern IMGUI_API void DemoMarker(const char* file, int line, const char* section); };
-#define IMGUI_DEMO_MARKER(section)  do { ImGui::DemoMarker("implot3d_demo.cpp", __LINE__, section); } while (0)
+namespace ImGui {
+extern IMGUI_API void DemoMarker(const char* file, int line, const char* section);
+};
+#define IMGUI_DEMO_MARKER(section)                                                                                                                   \
+    do {                                                                                                                                             \
+        ImGui::DemoMarker("implot3d_demo.cpp", __LINE__, section);                                                                                   \
+    } while (0)
 #else
 #define IMGUI_DEMO_MARKER(section)
 #endif
@@ -352,9 +357,8 @@ void DemoSurfacePlots() {
             ys[idx] = min_val + i * step;                                             // Y values are constant along columns
             zs[idx] = ImSin(2 * t + ImSqrt((xs[idx] * xs[idx] + ys[idx] * ys[idx]))); // z = sin(2t + sqrt(x^2 + y^2))
             // Custom per-point color: R=x, G=y, B=z (each remapped from [-1,1] to [0,1])
-            custom_colors[idx] = IM_COL32((ImU8)((xs[idx] + 1) * 0.5f * 255),
-                                          (ImU8)((ys[idx] + 1) * 0.5f * 255),
-                                          (ImU8)((zs[idx] + 1) * 0.5f * 255), 255);
+            custom_colors[idx] =
+                IM_COL32((ImU8)((xs[idx] + 1) * 0.5f * 255), (ImU8)((ys[idx] + 1) * 0.5f * 255), (ImU8)((zs[idx] + 1) * 0.5f * 255), 255);
         }
     }
 
@@ -946,16 +950,10 @@ void Demo_PerIndexColors() {
         colors2[i] = ImGui::GetColorU32(color);
     }
     if (ImPlot3D::BeginPlot("Colorful Lines")) {
-        ImPlot3D::PlotLine("f(x)", xs1, ys1, zs1, 1001, {
-            ImPlot3DProp_LineColors, colors1
-        });
-        ImPlot3D::PlotLine("g(x)", xs2, ys2, zs2, 20, {
-            ImPlot3DProp_Marker,           ImPlot3DMarker_Circle,
-            ImPlot3DProp_Flags,            (int)ImPlot3DLineFlags_Segments,
-            ImPlot3DProp_LineColors,       colors2,
-            ImPlot3DProp_MarkerFillColors, colors2,
-            ImPlot3DProp_MarkerLineColors, colors2
-        });
+        ImPlot3D::PlotLine("f(x)", xs1, ys1, zs1, 1001, {ImPlot3DProp_LineColors, colors1});
+        ImPlot3D::PlotLine("g(x)", xs2, ys2, zs2, 20,
+                           {ImPlot3DProp_Marker, ImPlot3DMarker_Circle, ImPlot3DProp_Flags, (int)ImPlot3DLineFlags_Segments, ImPlot3DProp_LineColors,
+                            colors2, ImPlot3DProp_MarkerFillColors, colors2, ImPlot3DProp_MarkerLineColors, colors2});
         ImPlot3D::EndPlot();
     }
 
@@ -991,18 +989,13 @@ void Demo_PerIndexColors() {
     }
 
     if (ImPlot3D::BeginPlot("Colorful Scatter")) {
-        ImPlot3D::PlotScatter("Data 1", xs_scatter1, ys_scatter1, zs_scatter1, 100, {
-            ImPlot3DProp_MarkerFillColors, colors_scatter1_fill,
-            ImPlot3DProp_MarkerLineColors, colors_scatter1_line,
-            ImPlot3DProp_MarkerSizes,      sizes_scatter1
-        });
-        ImPlot3D::PlotScatter("Data 2", xs_scatter2, ys_scatter2, zs_scatter2, 50, {
-            ImPlot3DProp_Marker,           ImPlot3DMarker_Square,
-            ImPlot3DProp_MarkerFillColors, colors_scatter2,
-            ImPlot3DProp_MarkerLineColors, colors_scatter2,
-            ImPlot3DProp_MarkerSizes,      sizes_scatter2,
-            ImPlot3DProp_FillAlpha,        0.5f
-        });
+        ImPlot3D::PlotScatter("Data 1", xs_scatter1, ys_scatter1, zs_scatter1, 100,
+                              {ImPlot3DProp_MarkerFillColors, colors_scatter1_fill, ImPlot3DProp_MarkerLineColors, colors_scatter1_line,
+                               ImPlot3DProp_MarkerSizes, sizes_scatter1});
+        ImPlot3D::PlotScatter("Data 2", xs_scatter2, ys_scatter2, zs_scatter2, 50,
+                              {ImPlot3DProp_Marker, ImPlot3DMarker_Square, ImPlot3DProp_MarkerFillColors, colors_scatter2,
+                               ImPlot3DProp_MarkerLineColors, colors_scatter2, ImPlot3DProp_MarkerSizes, sizes_scatter2, ImPlot3DProp_FillAlpha,
+                               0.5f});
         ImPlot3D::EndPlot();
     }
 
@@ -1017,13 +1010,30 @@ void Demo_PerIndexColors() {
         float cy[4] = {-0.5f, -0.5f, 0.5f, 0.5f};
         float cz[4] = {0.0f, 0.0f, 0.0f, 0.0f};
         int v = 0;
-        auto AddVertex = [&](float x, float y, float z) { xs_tri[v] = x; ys_tri[v] = y; zs_tri[v] = z; v++; };
-        AddVertex(ax, ay, az); AddVertex(cx[0], cy[0], cz[0]); AddVertex(cx[1], cy[1], cz[1]);
-        AddVertex(ax, ay, az); AddVertex(cx[1], cy[1], cz[1]); AddVertex(cx[2], cy[2], cz[2]);
-        AddVertex(ax, ay, az); AddVertex(cx[2], cy[2], cz[2]); AddVertex(cx[3], cy[3], cz[3]);
-        AddVertex(ax, ay, az); AddVertex(cx[3], cy[3], cz[3]); AddVertex(cx[0], cy[0], cz[0]);
-        AddVertex(cx[0], cy[0], cz[0]); AddVertex(cx[1], cy[1], cz[1]); AddVertex(cx[2], cy[2], cz[2]);
-        AddVertex(cx[0], cy[0], cz[0]); AddVertex(cx[2], cy[2], cz[2]); AddVertex(cx[3], cy[3], cz[3]);
+        auto AddVertex = [&](float x, float y, float z) {
+            xs_tri[v] = x;
+            ys_tri[v] = y;
+            zs_tri[v] = z;
+            v++;
+        };
+        AddVertex(ax, ay, az);
+        AddVertex(cx[0], cy[0], cz[0]);
+        AddVertex(cx[1], cy[1], cz[1]);
+        AddVertex(ax, ay, az);
+        AddVertex(cx[1], cy[1], cz[1]);
+        AddVertex(cx[2], cy[2], cz[2]);
+        AddVertex(ax, ay, az);
+        AddVertex(cx[2], cy[2], cz[2]);
+        AddVertex(cx[3], cy[3], cz[3]);
+        AddVertex(ax, ay, az);
+        AddVertex(cx[3], cy[3], cz[3]);
+        AddVertex(cx[0], cy[0], cz[0]);
+        AddVertex(cx[0], cy[0], cz[0]);
+        AddVertex(cx[1], cy[1], cz[1]);
+        AddVertex(cx[2], cy[2], cz[2]);
+        AddVertex(cx[0], cy[0], cz[0]);
+        AddVertex(cx[2], cy[2], cz[2]);
+        AddVertex(cx[3], cy[3], cz[3]);
         // Hot colormap sampled by z: bottom (z=0) is cold, apex (z=1) is hot
         for (int i = 0; i < 18; ++i) {
             ImVec4 color = ImPlot3D::SampleColormap(0.5f * zs_tri[i], ImPlot3DColormap_Hot);
@@ -1032,10 +1042,7 @@ void Demo_PerIndexColors() {
     }
     if (ImPlot3D::BeginPlot("Colorful Triangles")) {
         ImPlot3D::SetupAxesLimits(-1, 1, -1, 1, -0.5, 1.5);
-        ImPlot3D::PlotTriangle("Pyramid", xs_tri, ys_tri, zs_tri, 18, {
-            ImPlot3DProp_FillColors, colors_tri,
-            ImPlot3DProp_FillAlpha,  0.8f
-        });
+        ImPlot3D::PlotTriangle("Pyramid", xs_tri, ys_tri, zs_tri, 18, {ImPlot3DProp_FillColors, colors_tri, ImPlot3DProp_FillAlpha, 0.8f});
         ImPlot3D::EndPlot();
     }
 
@@ -1057,10 +1064,7 @@ void Demo_PerIndexColors() {
     }
     if (ImPlot3D::BeginPlot("Colorful Quads")) {
         ImPlot3D::SetupAxesLimits(-0.5, 1.5, -0.5, 1.5, -0.5, 1.5);
-        ImPlot3D::PlotQuad("Cube", xs_quad, ys_quad, zs_quad, 24, {
-            ImPlot3DProp_FillColors, colors_quad,
-            ImPlot3DProp_FillAlpha,  0.8f
-        });
+        ImPlot3D::PlotQuad("Cube", xs_quad, ys_quad, zs_quad, 24, {ImPlot3DProp_FillColors, colors_quad, ImPlot3DProp_FillAlpha, 0.8f});
         ImPlot3D::EndPlot();
     }
 
@@ -1076,9 +1080,7 @@ void Demo_PerIndexColors() {
         };
         auto sub3 = [](Vec3 a, Vec3 b) -> Vec3 { return {a.x - b.x, a.y - b.y, a.z - b.z}; };
         auto add3 = [](Vec3 a, Vec3 b) -> Vec3 { return {a.x + b.x, a.y + b.y, a.z + b.z}; };
-        auto cross3 = [](Vec3 a, Vec3 b) -> Vec3 {
-            return {a.y * b.z - a.z * b.y, a.z * b.x - a.x * b.z, a.x * b.y - a.y * b.x};
-        };
+        auto cross3 = [](Vec3 a, Vec3 b) -> Vec3 { return {a.y * b.z - a.z * b.y, a.z * b.x - a.x * b.z, a.x * b.y - a.y * b.x}; };
         auto dot3 = [](Vec3 a, Vec3 b) { return a.x * b.x + a.y * b.y + a.z * b.z; };
         auto norm3 = [&dot3](Vec3 a) -> Vec3 {
             float len = sqrtf(dot3(a, a));
@@ -1101,9 +1103,9 @@ void Demo_PerIndexColors() {
 
         // Lighting: yellow duck, warm point light, soft ambient
         Vec3 light_pos = {2.0f, 2.0f, 3.0f};
-        Vec3 duck_col = {1.0f, 0.85f, 0.1f};   // yellow
-        Vec3 light_col = {1.0f, 0.95f, 0.8f};  // warm white
-        Vec3 ambient = {0.15f, 0.12f, 0.03f};  // dim warm ambient
+        Vec3 duck_col = {1.0f, 0.85f, 0.1f};  // yellow
+        Vec3 light_col = {1.0f, 0.95f, 0.8f}; // warm white
+        Vec3 ambient = {0.15f, 0.12f, 0.03f}; // dim warm ambient
 
         ImU32 vtx_colors[DUCK_VTX_COUNT];
         for (int v = 0; v < DUCK_VTX_COUNT; v++) {
@@ -1124,11 +1126,9 @@ void Demo_PerIndexColors() {
     }
     if (ImPlot3D::BeginPlot("Gouraud Duck")) {
         ImPlot3D::SetupAxesLimits(-1, 1, -1, 1, -1, 1);
-        ImPlot3D::PlotMesh("Duck", &duck_vtx[0].x, &duck_vtx[0].y, &duck_vtx[0].z, duck_idx, DUCK_VTX_COUNT, DUCK_IDX_COUNT, {
-            ImPlot3DProp_Stride,     (int)sizeof(ImPlot3DPoint),
-            ImPlot3DProp_FillColors, duck_fill_colors,
-            ImPlot3DProp_Flags,      (int)ImPlot3DMeshFlags_NoLines
-        });
+        ImPlot3D::PlotMesh("Duck", &duck_vtx[0].x, &duck_vtx[0].y, &duck_vtx[0].z, duck_idx, DUCK_VTX_COUNT, DUCK_IDX_COUNT,
+                           {ImPlot3DProp_Stride, (int)sizeof(ImPlot3DPoint), ImPlot3DProp_FillColors, duck_fill_colors, ImPlot3DProp_Flags,
+                            (int)ImPlot3DMeshFlags_NoLines});
         ImPlot3D::EndPlot();
     }
 }

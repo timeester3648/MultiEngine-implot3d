@@ -346,7 +346,8 @@ struct RendererBase {
 
 template <class _Getter, class _GetterColor, class _GetterSize> struct RendererMarkersFill : RendererBase {
     RendererMarkersFill(const _Getter& getter, const _GetterColor& col_getter, const _GetterSize& size_getter, const ImVec2* marker, int count)
-        : RendererBase(getter.Count, (count - 2) * 3, count), Getter(getter), ColGetter(col_getter), SizeGetter(size_getter), Marker(marker), Count(count) {}
+        : RendererBase(getter.Count, (count - 2) * 3, count), Getter(getter), ColGetter(col_getter), SizeGetter(size_getter), Marker(marker),
+          Count(count) {}
 
     void Init(ImDrawList3D& draw_list_3d) const { UV = draw_list_3d._SharedData->TexUvWhitePixel; }
 
@@ -389,9 +390,10 @@ template <class _Getter, class _GetterColor, class _GetterSize> struct RendererM
 };
 
 template <class _Getter, class _GetterColor, class _GetterSize> struct RendererMarkersLine : RendererBase {
-    RendererMarkersLine(const _Getter& getter, const _GetterColor& col_getter, const _GetterSize& size_getter, const ImVec2* marker, int count, float weight)
-        : RendererBase(getter.Count, count / 2 * 6, count / 2 * 4), Getter(getter), ColGetter(col_getter), SizeGetter(size_getter),
-          Marker(marker), Count(count), HalfWeight(ImMax(1.0f, weight) * 0.5f) {}
+    RendererMarkersLine(const _Getter& getter, const _GetterColor& col_getter, const _GetterSize& size_getter, const ImVec2* marker, int count,
+                        float weight)
+        : RendererBase(getter.Count, count / 2 * 6, count / 2 * 4), Getter(getter), ColGetter(col_getter), SizeGetter(size_getter), Marker(marker),
+          Count(count), HalfWeight(ImMax(1.0f, weight) * 0.5f) {}
 
     void Init(ImDrawList3D& draw_list_3d) const { GetLineRenderProps(draw_list_3d, HalfWeight, UV0, UV1); }
 
@@ -542,7 +544,8 @@ template <class _Getter, class _GetterColor> struct RendererLineSegments : Rende
 };
 
 template <class _Getter, class _GetterColor> struct RendererTriangleFill : RendererBase {
-    RendererTriangleFill(const _Getter& getter, const _GetterColor& col_getter) : RendererBase(getter.Count / 3, 3, 3), Getter(getter), ColGetter(col_getter) {}
+    RendererTriangleFill(const _Getter& getter, const _GetterColor& col_getter)
+        : RendererBase(getter.Count / 3, 3, 3), Getter(getter), ColGetter(col_getter) {}
 
     void Init(ImDrawList3D& draw_list_3d) const { UV = draw_list_3d._SharedData->TexUvWhitePixel; }
 
@@ -598,7 +601,8 @@ template <class _Getter, class _GetterColor> struct RendererTriangleFill : Rende
 };
 
 template <class _Getter, class _GetterColor> struct RendererQuadFill : RendererBase {
-    RendererQuadFill(const _Getter& getter, const _GetterColor& col_getter) : RendererBase(getter.Count / 4, 6, 4), Getter(getter), ColGetter(col_getter) {}
+    RendererQuadFill(const _Getter& getter, const _GetterColor& col_getter)
+        : RendererBase(getter.Count / 4, 6, 4), Getter(getter), ColGetter(col_getter) {}
 
     void Init(ImDrawList3D& draw_list_3d) const { UV = draw_list_3d._SharedData->TexUvWhitePixel; }
 
@@ -1165,68 +1169,74 @@ static const ImVec2 MARKER_LINE_CROSS[4] = {ImVec2(-SQRT_1_2, -SQRT_1_2), ImVec2
                                             ImVec2(-SQRT_1_2, SQRT_1_2)};
 
 template <typename _Getter, typename _GetterFillColor, typename _GetterLineColor, typename _GetterSize>
-void RenderMarkers(const _Getter& getter, ImPlot3DMarker marker, bool rend_fill, const _GetterFillColor& col_fill,
-                   bool rend_line, const _GetterLineColor& col_line, const _GetterSize& size, float weight) {
+void RenderMarkers(const _Getter& getter, ImPlot3DMarker marker, bool rend_fill, const _GetterFillColor& col_fill, bool rend_line,
+                   const _GetterLineColor& col_line, const _GetterSize& size, float weight) {
     if (rend_fill) {
         switch (marker) {
-            case ImPlot3DMarker_Circle:  RenderPrimitives3<RendererMarkersFill>(getter, col_fill, size, MARKER_FILL_CIRCLE,  10); break;
-            case ImPlot3DMarker_Square:  RenderPrimitives3<RendererMarkersFill>(getter, col_fill, size, MARKER_FILL_SQUARE,   4); break;
-            case ImPlot3DMarker_Diamond: RenderPrimitives3<RendererMarkersFill>(getter, col_fill, size, MARKER_FILL_DIAMOND,  4); break;
-            case ImPlot3DMarker_Up:      RenderPrimitives3<RendererMarkersFill>(getter, col_fill, size, MARKER_FILL_UP,       3); break;
-            case ImPlot3DMarker_Down:    RenderPrimitives3<RendererMarkersFill>(getter, col_fill, size, MARKER_FILL_DOWN,     3); break;
-            case ImPlot3DMarker_Left:    RenderPrimitives3<RendererMarkersFill>(getter, col_fill, size, MARKER_FILL_LEFT,     3); break;
-            case ImPlot3DMarker_Right:   RenderPrimitives3<RendererMarkersFill>(getter, col_fill, size, MARKER_FILL_RIGHT,    3); break;
+            case ImPlot3DMarker_Circle: RenderPrimitives3<RendererMarkersFill>(getter, col_fill, size, MARKER_FILL_CIRCLE, 10); break;
+            case ImPlot3DMarker_Square: RenderPrimitives3<RendererMarkersFill>(getter, col_fill, size, MARKER_FILL_SQUARE, 4); break;
+            case ImPlot3DMarker_Diamond: RenderPrimitives3<RendererMarkersFill>(getter, col_fill, size, MARKER_FILL_DIAMOND, 4); break;
+            case ImPlot3DMarker_Up: RenderPrimitives3<RendererMarkersFill>(getter, col_fill, size, MARKER_FILL_UP, 3); break;
+            case ImPlot3DMarker_Down: RenderPrimitives3<RendererMarkersFill>(getter, col_fill, size, MARKER_FILL_DOWN, 3); break;
+            case ImPlot3DMarker_Left: RenderPrimitives3<RendererMarkersFill>(getter, col_fill, size, MARKER_FILL_LEFT, 3); break;
+            case ImPlot3DMarker_Right: RenderPrimitives3<RendererMarkersFill>(getter, col_fill, size, MARKER_FILL_RIGHT, 3); break;
         }
     }
     if (rend_line) {
         switch (marker) {
-            case ImPlot3DMarker_Circle:   RenderPrimitives3<RendererMarkersLine>(getter, col_line, size, MARKER_LINE_CIRCLE,   20, weight); break;
-            case ImPlot3DMarker_Square:   RenderPrimitives3<RendererMarkersLine>(getter, col_line, size, MARKER_LINE_SQUARE,    8, weight); break;
-            case ImPlot3DMarker_Diamond:  RenderPrimitives3<RendererMarkersLine>(getter, col_line, size, MARKER_LINE_DIAMOND,   8, weight); break;
-            case ImPlot3DMarker_Up:       RenderPrimitives3<RendererMarkersLine>(getter, col_line, size, MARKER_LINE_UP,        6, weight); break;
-            case ImPlot3DMarker_Down:     RenderPrimitives3<RendererMarkersLine>(getter, col_line, size, MARKER_LINE_DOWN,      6, weight); break;
-            case ImPlot3DMarker_Left:     RenderPrimitives3<RendererMarkersLine>(getter, col_line, size, MARKER_LINE_LEFT,      6, weight); break;
-            case ImPlot3DMarker_Right:    RenderPrimitives3<RendererMarkersLine>(getter, col_line, size, MARKER_LINE_RIGHT,     6, weight); break;
-            case ImPlot3DMarker_Asterisk: RenderPrimitives3<RendererMarkersLine>(getter, col_line, size, MARKER_LINE_ASTERISK,  6, weight); break;
-            case ImPlot3DMarker_Plus:     RenderPrimitives3<RendererMarkersLine>(getter, col_line, size, MARKER_LINE_PLUS,      4, weight); break;
-            case ImPlot3DMarker_Cross:    RenderPrimitives3<RendererMarkersLine>(getter, col_line, size, MARKER_LINE_CROSS,     4, weight); break;
+            case ImPlot3DMarker_Circle: RenderPrimitives3<RendererMarkersLine>(getter, col_line, size, MARKER_LINE_CIRCLE, 20, weight); break;
+            case ImPlot3DMarker_Square: RenderPrimitives3<RendererMarkersLine>(getter, col_line, size, MARKER_LINE_SQUARE, 8, weight); break;
+            case ImPlot3DMarker_Diamond: RenderPrimitives3<RendererMarkersLine>(getter, col_line, size, MARKER_LINE_DIAMOND, 8, weight); break;
+            case ImPlot3DMarker_Up: RenderPrimitives3<RendererMarkersLine>(getter, col_line, size, MARKER_LINE_UP, 6, weight); break;
+            case ImPlot3DMarker_Down: RenderPrimitives3<RendererMarkersLine>(getter, col_line, size, MARKER_LINE_DOWN, 6, weight); break;
+            case ImPlot3DMarker_Left: RenderPrimitives3<RendererMarkersLine>(getter, col_line, size, MARKER_LINE_LEFT, 6, weight); break;
+            case ImPlot3DMarker_Right: RenderPrimitives3<RendererMarkersLine>(getter, col_line, size, MARKER_LINE_RIGHT, 6, weight); break;
+            case ImPlot3DMarker_Asterisk: RenderPrimitives3<RendererMarkersLine>(getter, col_line, size, MARKER_LINE_ASTERISK, 6, weight); break;
+            case ImPlot3DMarker_Plus: RenderPrimitives3<RendererMarkersLine>(getter, col_line, size, MARKER_LINE_PLUS, 4, weight); break;
+            case ImPlot3DMarker_Cross: RenderPrimitives3<RendererMarkersLine>(getter, col_line, size, MARKER_LINE_CROSS, 4, weight); break;
         }
     }
 }
 
 // Convenience wrapper using constant color/size (existing call sites)
-template <typename _Getter>
-void RenderMarkers(const _Getter& getter, ImPlot3DMarker marker, float size, bool rend_fill, ImU32 col_fill,
-                   bool rend_line, ImU32 col_line, float weight) {
+template <typename _Getter> void RenderMarkers(const _Getter& getter, ImPlot3DMarker marker, float size, bool rend_fill, ImU32 col_fill,
+                                               bool rend_line, ImU32 col_line, float weight) {
     RenderMarkers(getter, marker, rend_fill, GetterConstColor(col_fill), rend_line, GetterConstColor(col_line), GetterConstSize(size), weight);
 }
 
-template <typename _Getter>
-void RenderColoredMarkers(const _Getter& getter, const ImPlot3DNextItemData& n) {
+template <typename _Getter> void RenderColoredMarkers(const _Getter& getter, const ImPlot3DNextItemData& n) {
     const ImPlot3DSpec& s = n.Spec;
     const ImU32 col_line = ImGui::GetColorU32(s.MarkerLineColor);
     const ImU32 col_fill = ImGui::GetColorU32(s.MarkerFillColor);
     if (s.MarkerSizes != nullptr) {
         GetterIdxSize size_getter(s.MarkerSizes, getter.Count);
         if (s.MarkerFillColors != nullptr && s.MarkerLineColors != nullptr) {
-            RenderMarkers(getter, s.Marker, n.RenderMarkerFill, GetterIdxColor(s.MarkerFillColors, getter.Count, s.FillAlpha), n.RenderMarkerLine, GetterIdxColor(s.MarkerLineColors, getter.Count), size_getter, s.LineWeight);
+            RenderMarkers(getter, s.Marker, n.RenderMarkerFill, GetterIdxColor(s.MarkerFillColors, getter.Count, s.FillAlpha), n.RenderMarkerLine,
+                          GetterIdxColor(s.MarkerLineColors, getter.Count), size_getter, s.LineWeight);
         } else if (s.MarkerFillColors != nullptr) {
-            RenderMarkers(getter, s.Marker, n.RenderMarkerFill, GetterIdxColor(s.MarkerFillColors, getter.Count, s.FillAlpha), n.RenderMarkerLine, GetterConstColor(col_line), size_getter, s.LineWeight);
+            RenderMarkers(getter, s.Marker, n.RenderMarkerFill, GetterIdxColor(s.MarkerFillColors, getter.Count, s.FillAlpha), n.RenderMarkerLine,
+                          GetterConstColor(col_line), size_getter, s.LineWeight);
         } else if (s.MarkerLineColors != nullptr) {
-            RenderMarkers(getter, s.Marker, n.RenderMarkerFill, GetterConstColor(col_fill), n.RenderMarkerLine, GetterIdxColor(s.MarkerLineColors, getter.Count), size_getter, s.LineWeight);
+            RenderMarkers(getter, s.Marker, n.RenderMarkerFill, GetterConstColor(col_fill), n.RenderMarkerLine,
+                          GetterIdxColor(s.MarkerLineColors, getter.Count), size_getter, s.LineWeight);
         } else {
-            RenderMarkers(getter, s.Marker, n.RenderMarkerFill, GetterConstColor(col_fill), n.RenderMarkerLine, GetterConstColor(col_line), size_getter, s.LineWeight);
+            RenderMarkers(getter, s.Marker, n.RenderMarkerFill, GetterConstColor(col_fill), n.RenderMarkerLine, GetterConstColor(col_line),
+                          size_getter, s.LineWeight);
         }
     } else {
         GetterConstSize size_getter(s.MarkerSize);
         if (s.MarkerFillColors != nullptr && s.MarkerLineColors != nullptr) {
-            RenderMarkers(getter, s.Marker, n.RenderMarkerFill, GetterIdxColor(s.MarkerFillColors, getter.Count, s.FillAlpha), n.RenderMarkerLine, GetterIdxColor(s.MarkerLineColors, getter.Count), size_getter, s.LineWeight);
+            RenderMarkers(getter, s.Marker, n.RenderMarkerFill, GetterIdxColor(s.MarkerFillColors, getter.Count, s.FillAlpha), n.RenderMarkerLine,
+                          GetterIdxColor(s.MarkerLineColors, getter.Count), size_getter, s.LineWeight);
         } else if (s.MarkerFillColors != nullptr) {
-            RenderMarkers(getter, s.Marker, n.RenderMarkerFill, GetterIdxColor(s.MarkerFillColors, getter.Count, s.FillAlpha), n.RenderMarkerLine, GetterConstColor(col_line), size_getter, s.LineWeight);
+            RenderMarkers(getter, s.Marker, n.RenderMarkerFill, GetterIdxColor(s.MarkerFillColors, getter.Count, s.FillAlpha), n.RenderMarkerLine,
+                          GetterConstColor(col_line), size_getter, s.LineWeight);
         } else if (s.MarkerLineColors != nullptr) {
-            RenderMarkers(getter, s.Marker, n.RenderMarkerFill, GetterConstColor(col_fill), n.RenderMarkerLine, GetterIdxColor(s.MarkerLineColors, getter.Count), size_getter, s.LineWeight);
+            RenderMarkers(getter, s.Marker, n.RenderMarkerFill, GetterConstColor(col_fill), n.RenderMarkerLine,
+                          GetterIdxColor(s.MarkerLineColors, getter.Count), size_getter, s.LineWeight);
         } else {
-            RenderMarkers(getter, s.Marker, n.RenderMarkerFill, GetterConstColor(col_fill), n.RenderMarkerLine, GetterConstColor(col_line), size_getter, s.LineWeight);
+            RenderMarkers(getter, s.Marker, n.RenderMarkerFill, GetterConstColor(col_fill), n.RenderMarkerLine, GetterConstColor(col_line),
+                          size_getter, s.LineWeight);
         }
     }
 }
@@ -1282,14 +1292,17 @@ template <typename _Getter> void PlotLineEx(const char* label_id, const _Getter&
             } else if (ImHasFlag(spec.Flags, ImPlot3DLineFlags_Loop)) {
                 if (s.LineColors != nullptr) {
                     if (ImHasFlag(spec.Flags, ImPlot3DLineFlags_SkipNaN))
-                        RenderPrimitives2<RendererLineStripSkip>(GetterLoop<_Getter>(getter), GetterIdxColor(s.LineColors, getter.Count), s.LineWeight);
+                        RenderPrimitives2<RendererLineStripSkip>(GetterLoop<_Getter>(getter), GetterIdxColor(s.LineColors, getter.Count),
+                                                                 s.LineWeight);
                     else
                         RenderPrimitives2<RendererLineStrip>(GetterLoop<_Getter>(getter), GetterIdxColor(s.LineColors, getter.Count), s.LineWeight);
                 } else {
                     if (ImHasFlag(spec.Flags, ImPlot3DLineFlags_SkipNaN))
-                        RenderPrimitives2<RendererLineStripSkip>(GetterLoop<_Getter>(getter), GetterConstColor(ImGui::GetColorU32(s.LineColor)), s.LineWeight);
+                        RenderPrimitives2<RendererLineStripSkip>(GetterLoop<_Getter>(getter), GetterConstColor(ImGui::GetColorU32(s.LineColor)),
+                                                                 s.LineWeight);
                     else
-                        RenderPrimitives2<RendererLineStrip>(GetterLoop<_Getter>(getter), GetterConstColor(ImGui::GetColorU32(s.LineColor)), s.LineWeight);
+                        RenderPrimitives2<RendererLineStrip>(GetterLoop<_Getter>(getter), GetterConstColor(ImGui::GetColorU32(s.LineColor)),
+                                                             s.LineWeight);
                 }
             } else {
                 if (s.LineColors != nullptr) {
@@ -1348,9 +1361,11 @@ template <typename _Getter> void PlotTriangleEx(const char* label_id, const _Get
         // Render lines
         if (getter.Count >= 2 && n.RenderLine && !ImHasFlag(spec.Flags, ImPlot3DTriangleFlags_NoLines)) {
             if (s.LineColors != nullptr)
-                RenderPrimitives2<RendererLineSegments>(GetterTriangleLines<_Getter>(getter), GetterIdxColor(s.LineColors, getter.Count), s.LineWeight);
+                RenderPrimitives2<RendererLineSegments>(GetterTriangleLines<_Getter>(getter), GetterIdxColor(s.LineColors, getter.Count),
+                                                        s.LineWeight);
             else
-                RenderPrimitives2<RendererLineSegments>(GetterTriangleLines<_Getter>(getter), GetterConstColor(ImGui::GetColorU32(s.LineColor)), s.LineWeight);
+                RenderPrimitives2<RendererLineSegments>(GetterTriangleLines<_Getter>(getter), GetterConstColor(ImGui::GetColorU32(s.LineColor)),
+                                                        s.LineWeight);
         }
 
         // Render markers
@@ -1398,7 +1413,8 @@ template <typename _Getter> void PlotQuadEx(const char* label_id, const _Getter&
             if (s.LineColors != nullptr)
                 RenderPrimitives2<RendererLineSegments>(GetterQuadLines<_Getter>(getter), GetterIdxColor(s.LineColors, getter.Count), s.LineWeight);
             else
-                RenderPrimitives2<RendererLineSegments>(GetterQuadLines<_Getter>(getter), GetterConstColor(ImGui::GetColorU32(s.LineColor)), s.LineWeight);
+                RenderPrimitives2<RendererLineSegments>(GetterQuadLines<_Getter>(getter), GetterConstColor(ImGui::GetColorU32(s.LineColor)),
+                                                        s.LineWeight);
         }
 
         // Render markers
@@ -1443,9 +1459,11 @@ template <typename _Getter> void PlotSurfaceEx(const char* label_id, const _Gett
         // Render lines
         if (getter.Count >= 2 && n.RenderLine && !ImHasFlag(spec.Flags, ImPlot3DSurfaceFlags_NoLines)) {
             if (s.LineColors != nullptr)
-                RenderPrimitives2<RendererLineSegments>(GetterSurfaceLines<_Getter>(getter, x_count, y_count), GetterIdxColor(s.LineColors, getter.Count), s.LineWeight);
+                RenderPrimitives2<RendererLineSegments>(GetterSurfaceLines<_Getter>(getter, x_count, y_count),
+                                                        GetterIdxColor(s.LineColors, getter.Count), s.LineWeight);
             else
-                RenderPrimitives2<RendererLineSegments>(GetterSurfaceLines<_Getter>(getter, x_count, y_count), GetterConstColor(ImGui::GetColorU32(s.LineColor)), s.LineWeight);
+                RenderPrimitives2<RendererLineSegments>(GetterSurfaceLines<_Getter>(getter, x_count, y_count),
+                                                        GetterConstColor(ImGui::GetColorU32(s.LineColor)), s.LineWeight);
         }
 
         // Render markers
@@ -1495,9 +1513,11 @@ void PlotMeshEx(const char* label_id, const _VtxGetter& getter, const _TriGetter
         // Render lines
         if (getter.Count >= 2 && n.RenderLine && !n.IsAutoLine && !ImHasFlag(spec.Flags, ImPlot3DMeshFlags_NoLines)) {
             if (s.LineColors != nullptr)
-                RenderPrimitives2<RendererLineSegments>(GetterTriangleLines<_TriGetter>(getter_triangles), GetterIdxColor(s.LineColors, getter_triangles.Count), s.LineWeight);
+                RenderPrimitives2<RendererLineSegments>(GetterTriangleLines<_TriGetter>(getter_triangles),
+                                                        GetterIdxColor(s.LineColors, getter_triangles.Count), s.LineWeight);
             else
-                RenderPrimitives2<RendererLineSegments>(GetterTriangleLines<_TriGetter>(getter_triangles), GetterConstColor(ImGui::GetColorU32(s.LineColor)), s.LineWeight);
+                RenderPrimitives2<RendererLineSegments>(GetterTriangleLines<_TriGetter>(getter_triangles),
+                                                        GetterConstColor(ImGui::GetColorU32(s.LineColor)), s.LineWeight);
         }
 
         // Render markers
@@ -1516,15 +1536,14 @@ IMPLOT3D_TMP void PlotMesh(const char* label_id, const T* vtx_xs, const T* vtx_y
     GetterXYZ<IndexerIdx<T>, IndexerIdx<T>, IndexerIdx<T>> getter(IndexerIdx<T>(vtx_xs, vtx_count, spec.Offset, stride),
                                                                   IndexerIdx<T>(vtx_ys, vtx_count, spec.Offset, stride),
                                                                   IndexerIdx<T>(vtx_zs, vtx_count, spec.Offset, stride), vtx_count);
-    GetterMeshTriangles<IndexerIdx<T>, IndexerIdx<T>, IndexerIdx<T>> getter_triangles(IndexerIdx<T>(vtx_xs, vtx_count, spec.Offset, stride),
-                                                                                      IndexerIdx<T>(vtx_ys, vtx_count, spec.Offset, stride),
-                                                                                      IndexerIdx<T>(vtx_zs, vtx_count, spec.Offset, stride), idxs,
-                                                                                      idx_count);
+    GetterMeshTriangles<IndexerIdx<T>, IndexerIdx<T>, IndexerIdx<T>> getter_triangles(
+        IndexerIdx<T>(vtx_xs, vtx_count, spec.Offset, stride), IndexerIdx<T>(vtx_ys, vtx_count, spec.Offset, stride),
+        IndexerIdx<T>(vtx_zs, vtx_count, spec.Offset, stride), idxs, idx_count);
     PlotMeshEx(label_id, getter, getter_triangles, spec);
 }
 
 #define INSTANTIATE_MACRO(T)                                                                                                                         \
-    template IMPLOT3D_API void PlotMesh<T>(const char* label_id, const T* vtx_xs, const T* vtx_ys, const T* vtx_zs, const unsigned int* idxs,       \
+    template IMPLOT3D_API void PlotMesh<T>(const char* label_id, const T* vtx_xs, const T* vtx_ys, const T* vtx_zs, const unsigned int* idxs,        \
                                            int vtx_count, int idx_count, const ImPlot3DSpec& spec);
 CALL_INSTANTIATE_FOR_NUMERIC_TYPES()
 #undef INSTANTIATE_MACRO

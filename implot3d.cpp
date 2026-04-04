@@ -641,7 +641,7 @@ float ComputeMaxTickLabelExtent(const ImPlot3DAxis& axis);
 
 // Spacing constants for axis tick labels and axis labels
 static const float AXIS_TICK_INNER_PAD = 5.0f;  // gap between axis edge and inner edge of tick labels
-static const float AXIS_LABEL_PAD      = 10.0f; // gap between tick label outer edge and axis label center
+static const float AXIS_LABEL_PAD = 10.0f;      // gap between tick label outer edge and axis label center
 static const float AXIS_RECT_MIN_WIDTH = 40.0f; // minimum hover rect width when labels are absent
 
 // Computes the total outward width of the hover rect for an axis
@@ -2908,7 +2908,7 @@ struct ImPlot3DStyleVarInfo {
 static const ImPlot3DStyleVarInfo GPlot3DStyleVarInfo[] = {
     // Item style
     {ImGuiDataType_Float, 1, (ImU32)offsetof(ImPlot3DStyle, LineWeight)}, // ImPlot3DStyleVar_LineWeight
-    {ImGuiDataType_S32,   1, (ImU32)offsetof(ImPlot3DStyle, Marker)},     // ImPlot3DStyleVar_Marker
+    {ImGuiDataType_S32, 1, (ImU32)offsetof(ImPlot3DStyle, Marker)},       // ImPlot3DStyleVar_Marker
     {ImGuiDataType_Float, 1, (ImU32)offsetof(ImPlot3DStyle, MarkerSize)}, // ImPlot3DStyleVar_MarkerSize
     {ImGuiDataType_Float, 1, (ImU32)offsetof(ImPlot3DStyle, FillAlpha)},  // ImPlot3DStyleVar_FillAlpha
 
