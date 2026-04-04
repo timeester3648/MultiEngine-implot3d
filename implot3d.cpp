@@ -631,7 +631,7 @@ float ComputeMaxTickLabelExtent(const ImPlot3DAxis& axis);
 
 int GetMouseOverAxis(const ImPlot3DPlot& plot, const ImVec2* corners_pix, const int plane_2d, const int axis_corners[3][2], int* edge_out = nullptr) {
     const float inner_pad = 5.0f;
-    const float axis_label_padding = 5.0f;
+    const float axis_label_padding = 10.0f;
 
     ImGuiIO& io = ImGui::GetIO();
     ImVec2 mouse_pos = io.MousePos;
@@ -735,7 +735,7 @@ void RenderPlotBackground(ImDrawList* draw_list, const ImPlot3DPlot& plot, const
 void RenderAxisRects(ImDrawList* draw_list, const ImPlot3DPlot& plot, const ImVec2* corners_pix, const bool*, const int plane_2d,
                      const int axis_corners[3][2]) {
     const float inner_pad = 5.0f;
-    const float axis_label_padding = 5.0f;
+    const float axis_label_padding = 10.0f;
 
     int hovered_edge = -1;
     if (!plot.Held)
@@ -1151,7 +1151,7 @@ void RenderAxisLabels(ImDrawList* draw_list, const ImPlot3DPlot& plot, const ImP
                       const int axis_corners[3][2]) {
     ImU32 col_ax_txt = GetStyleColorU32(ImPlot3DCol_AxisText);
     const float inner_pad = 5.0f;       // Gap from axis edge to inner edge of tick labels
-    const float axis_label_padding = 5.0f; // Gap between tick label outer edge and axis label center
+    const float axis_label_padding = 10.0f; // Gap between tick label outer edge and axis label center
 
     for (int a = 0; a < 3; a++) {
         const ImPlot3DAxis& axis = plot.Axes[a];
