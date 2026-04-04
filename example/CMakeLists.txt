@@ -26,7 +26,7 @@ FetchContent_MakeAvailable(glfw)
 FetchContent_Declare(
     imgui
     GIT_REPOSITORY "https://github.com/ocornut/imgui"
-    GIT_TAG "v1.92.4"
+    GIT_TAG "v1.92.7"
     GIT_PROGRESS TRUE
 )
 FetchContent_MakeAvailable(imgui)
@@ -47,7 +47,7 @@ target_link_libraries(imgui PUBLIC glfw OpenGL::GL)
 FetchContent_Declare(
     implot
     GIT_REPOSITORY "https://github.com/epezent/implot"
-    GIT_TAG "feat/spec-colors"
+    GIT_TAG "v0.17"
     GIT_PROGRESS TRUE
 )
 FetchContent_MakeAvailable(implot)
