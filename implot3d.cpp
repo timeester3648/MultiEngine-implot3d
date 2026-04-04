@@ -630,8 +630,8 @@ ImVec2 ComputeEdgeOutwardDir(const ImVec2& p0, const ImVec2& p1, const ImVec2& b
 float ComputeMaxTickLabelExtent(const ImPlot3DAxis& axis);
 
 // Spacing constants for axis tick labels and axis labels
-static const float AXIS_TICK_INNER_PAD = 5.0f;   // gap between axis edge and inner edge of tick labels
-static const float AXIS_LABEL_PAD      = 10.0f;  // gap between tick label outer edge and axis label center
+static const float AXIS_TICK_INNER_PAD = 5.0f; // gap between axis edge and inner edge of tick labels
+static const float AXIS_LABEL_PAD = 10.0f;     // gap between tick label outer edge and axis label center
 
 // Computes the total outward width of the hover rect for an axis
 float ComputeAxisHoverWidth(const ImPlot3DAxis& axis) {
@@ -724,11 +724,7 @@ void RenderPlotBackground(ImDrawList* draw_list, const ImPlot3DPlot& plot, const
 
 void RenderAxisRects(ImDrawList* draw_list, const ImPlot3DPlot& plot, const ImVec2* corners_pix, const bool*, const int plane_2d,
                      const int axis_corners[3][2]) {
-    int hovered_edge = -1;
-    if (!plot.Held)
-        GetMouseOverAxis(plot, corners_pix, plane_2d, axis_corners, &hovered_edge);
-    else
-        hovered_edge = plot.HeldEdgeIdx;
+    int hovered_axis = GetMouseOverAxis(plot, corners_pix, plane_2d, axis_corners);
 
     // Compute box center in screen space
     ImVec2 box_center(0, 0);
@@ -745,20 +741,7 @@ void RenderAxisRects(ImDrawList* draw_list, const ImPlot3DPlot& plot, const ImVe
         int idx0 = axis_corners[axis_idx][0];
         int idx1 = axis_corners[axis_idx][1];
 
-        // Skip if axis corners are not defined
         if (idx0 == -1 || idx1 == -1)
-            continue;
-
-        // Find the edge index for these two corners
-        int edge = -1;
-        for (int e = 0; e < 12; e++) {
-            if ((edges[e][0] == idx0 && edges[e][1] == idx1) || (edges[e][0] == idx1 && edges[e][1] == idx0)) {
-                edge = e;
-                break;
-            }
-        }
-
-        if (edge == -1)
             continue;
 
         const ImPlot3DAxis& axis = plot.Axes[axis_idx];
@@ -769,15 +752,15 @@ void RenderAxisRects(ImDrawList* draw_list, const ImPlot3DPlot& plot, const ImVe
 
         // Determine color based on state
         ImU32 col;
-        if (edge == hovered_edge) {
-            col = axis.Held ? axis.ColorAct : axis.ColorHov;
-        } else {
+        if (axis.Held)
+            col = axis.ColorAct;
+        else if (axis_idx == hovered_axis)
+            col = axis.ColorHov;
+        else
             col = axis.ColorBg;
-        }
 
         // Draw hover rectangle if color is not transparent
         if (col != IM_COL32_BLACK_TRANS) {
-            // Draw rectangle extending outward from edge
             ImVec2 c0 = p0;
             ImVec2 c1 = p0 + outward_dir * hover_width;
             ImVec2 c2 = p1 + outward_dir * hover_width;
