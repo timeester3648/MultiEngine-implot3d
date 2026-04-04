@@ -48,6 +48,16 @@ Below is a change-log of API breaking changes only. If you are using one of the 
 When you are not sure about an old symbol or function name, try using the Search/Find function of your IDE to look for comments or references in all
 implot3d files. You can read releases logs https://github.com/brenocq/implot3d/releases for more details.
 
+- 2026/04/04 (0.4) - PlotMesh signature changed: the ImPlot3DPoint* overload is deprecated and will be removed in v1.0.
+                     A new overload accepting separate coordinate arrays (vtx_xs, vtx_ys, vtx_zs) was added, matching
+                     the pattern of PlotLine/PlotScatter/PlotTriangle and supporting Spec.Offset and Spec.Stride.
+                         ```cpp
+                         // Before
+                         ImPlot3D::PlotMesh("Mesh", vtx, idxs, vtx_count, idx_count);
+
+                         // After
+                         ImPlot3D::PlotMesh("Mesh", vtx_xs, vtx_ys, vtx_zs, idxs, vtx_count, idx_count);
+                         ```
 - 2026/02/03 (0.4) - ImPlotSpec was made the default and _only_ way of styling plot items. The SetNextXXXStyle functions have been removed.
                       - SetNextLineStyle has been removed, styling should be set via ImPlot3DSpec.
                           ```cpp
@@ -631,7 +641,7 @@ float ComputeMaxTickLabelExtent(const ImPlot3DAxis& axis);
 
 // Spacing constants for axis tick labels and axis labels
 static const float AXIS_TICK_INNER_PAD = 5.0f;  // gap between axis edge and inner edge of tick labels
-static const float AXIS_LABEL_PAD      = 10.0f; // gap between tick label outer edge and axis label center
+static const float AXIS_LABEL_PAD = 10.0f;      // gap between tick label outer edge and axis label center
 static const float AXIS_RECT_MIN_WIDTH = 40.0f; // minimum hover rect width when labels are absent
 
 // Computes the total outward width of the hover rect for an axis
@@ -2898,7 +2908,7 @@ struct ImPlot3DStyleVarInfo {
 static const ImPlot3DStyleVarInfo GPlot3DStyleVarInfo[] = {
     // Item style
     {ImGuiDataType_Float, 1, (ImU32)offsetof(ImPlot3DStyle, LineWeight)}, // ImPlot3DStyleVar_LineWeight
-    {ImGuiDataType_S32,   1, (ImU32)offsetof(ImPlot3DStyle, Marker)},     // ImPlot3DStyleVar_Marker
+    {ImGuiDataType_S32, 1, (ImU32)offsetof(ImPlot3DStyle, Marker)},       // ImPlot3DStyleVar_Marker
     {ImGuiDataType_Float, 1, (ImU32)offsetof(ImPlot3DStyle, MarkerSize)}, // ImPlot3DStyleVar_MarkerSize
     {ImGuiDataType_Float, 1, (ImU32)offsetof(ImPlot3DStyle, FillAlpha)},  // ImPlot3DStyleVar_FillAlpha
 
