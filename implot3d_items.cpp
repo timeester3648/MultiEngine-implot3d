@@ -792,7 +792,16 @@ template <class _Getter> struct RendererSurfaceFill : RendererBase {
         // Compute colors
         ImU32 cols[4] = {Col, Col, Col, Col};
         const ImPlot3DNextItemData& n = GetItemData();
-        if (n.IsAutoFill) {
+        const int vtx_idx[4] = {x + y * XCount, x + 1 + y * XCount, x + 1 + (y + 1) * XCount, x + (y + 1) * XCount};
+        if (n.Spec.FillColors != nullptr) {
+            float alpha = n.Spec.FillAlpha;
+            for (int i = 0; i < 4; i++) {
+                ImU32 c = n.Spec.FillColors[vtx_idx[i]];
+                ImVec4 cv = ImGui::ColorConvertU32ToFloat4(c);
+                cv.w *= alpha;
+                cols[i] = ImGui::ColorConvertFloat4ToU32(cv);
+            }
+        } else if (n.IsAutoFill) {
             float alpha = GImPlot3D->NextItemData.Spec.FillAlpha;
             double min = Min;
             double max = Max;
@@ -1432,15 +1441,15 @@ template <typename _Getter> void PlotSurfaceEx(const char* label_id, const _Gett
 
         // Render lines
         if (getter.Count >= 2 && n.RenderLine && !ImHasFlag(spec.Flags, ImPlot3DSurfaceFlags_NoLines)) {
-            RenderPrimitives2<RendererLineSegments>(GetterSurfaceLines<_Getter>(getter, x_count, y_count), GetterConstColor(ImGui::GetColorU32(s.LineColor)), s.LineWeight);
+            if (s.LineColors != nullptr)
+                RenderPrimitives2<RendererLineSegments>(GetterSurfaceLines<_Getter>(getter, x_count, y_count), GetterIdxColor(s.LineColors, getter.Count), s.LineWeight);
+            else
+                RenderPrimitives2<RendererLineSegments>(GetterSurfaceLines<_Getter>(getter, x_count, y_count), GetterConstColor(ImGui::GetColorU32(s.LineColor)), s.LineWeight);
         }
 
         // Render markers
-        if (s.Marker != ImPlot3DMarker_None && !ImHasFlag(spec.Flags, ImPlot3DSurfaceFlags_NoMarkers)) {
-            const ImU32 col_line = ImGui::GetColorU32(s.MarkerLineColor);
-            const ImU32 col_fill = ImGui::GetColorU32(s.MarkerFillColor);
-            RenderMarkers<_Getter>(getter, s.Marker, s.MarkerSize, n.RenderMarkerFill, col_fill, n.RenderMarkerLine, col_line, s.LineWeight);
-        }
+        if (s.Marker != ImPlot3DMarker_None && !ImHasFlag(spec.Flags, ImPlot3DSurfaceFlags_NoMarkers))
+            RenderColoredMarkers(getter, n);
 
         EndItem();
     }

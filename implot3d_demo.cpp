@@ -335,6 +335,7 @@ void DemoSurfacePlots() {
     IMGUI_DEMO_MARKER("Plots/Surface Plots");
     constexpr int N = 20;
     static float xs[N * N], ys[N * N], zs[N * N];
+    static ImU32 custom_colors[N * N];
     static float t = 0.0f;
     t += ImGui::GetIO().DeltaTime;
 
@@ -350,6 +351,10 @@ void DemoSurfacePlots() {
             xs[idx] = min_val + j * step;                                             // X values are constant along rows
             ys[idx] = min_val + i * step;                                             // Y values are constant along columns
             zs[idx] = ImSin(2 * t + ImSqrt((xs[idx] * xs[idx] + ys[idx] * ys[idx]))); // z = sin(2t + sqrt(x^2 + y^2))
+            // Custom per-point color: R=x, G=y, B=z (each remapped from [-1,1] to [0,1])
+            custom_colors[idx] = IM_COL32((ImU8)((xs[idx] + 1) * 0.5f * 255),
+                                          (ImU8)((ys[idx] + 1) * 0.5f * 255),
+                                          (ImU8)((zs[idx] + 1) * 0.5f * 255), 255);
         }
     }
 
@@ -375,13 +380,21 @@ void DemoSurfacePlots() {
             ImGui::SameLine();
             ImGui::Combo("##SurfaceColormap", &sel_colormap, colormaps, IM_ARRAYSIZE(colormaps));
         }
+
+        // Custom per-point colors
+        ImGui::RadioButton("Custom Per-Point", &selected_fill, 2);
+        if (selected_fill == 2)
+            ImGui::SameLine(), ImGui::TextDisabled("R=x, G=y, B=z");
+
         ImGui::Unindent();
     }
 
-    // Choose range
+    // Choose range (only applies to Colormap mode)
     static bool custom_range = false;
     static float range_min = -1.0f;
     static float range_max = 1.0f;
+    if (selected_fill != 1)
+        ImGui::BeginDisabled();
     ImGui::Checkbox("Custom range", &custom_range);
     {
         ImGui::Indent();
@@ -395,6 +408,8 @@ void DemoSurfacePlots() {
 
         ImGui::Unindent();
     }
+    if (selected_fill != 1)
+        ImGui::EndDisabled();
 
     // Select flags
     static ImPlot3DSurfaceFlags flags = ImPlot3DSurfaceFlags_NoMarkers;
@@ -415,6 +430,8 @@ void DemoSurfacePlots() {
         spec.LineColor = ImPlot3D::GetColormapColor(1);
         if (selected_fill == 0)
             spec.FillColor = solid_color;
+        else if (selected_fill == 2)
+            spec.FillColors = custom_colors;
 
         // Plot the surface
         if (custom_range)
