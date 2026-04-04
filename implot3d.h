@@ -651,9 +651,11 @@ IMPLOT3D_TMP void PlotQuad(const char* label_id, const T* xs, const T* ys, const
 IMPLOT3D_TMP void PlotSurface(const char* label_id, const T* xs, const T* ys, const T* zs, int x_count, int y_count, double scale_min = 0.0,
                               double scale_max = 0.0, const ImPlot3DSpec& spec = ImPlot3DSpec());
 
-// Plots a 3D mesh given vertex positions and indices. Triangles are defined by the index buffer (every 3 indices form a triangle)
-IMPLOT3D_API void PlotMesh(const char* label_id, const ImPlot3DPoint* vtx, const unsigned int* idx, int vtx_count, int idx_count,
-                           const ImPlot3DSpec& spec = ImPlot3DSpec());
+// Plots a 3D mesh given vertex positions as separate coordinate arrays and an index buffer.
+// Triangles are defined by the index buffer (every 3 indices form a triangle).
+// Spec.Offset and Spec.Stride apply to the vertex coordinate arrays only, not to the index buffer.
+IMPLOT3D_TMP void PlotMesh(const char* label_id, const T* vtx_xs, const T* vtx_ys, const T* vtx_zs, const unsigned int* idxs, int vtx_count,
+                           int idx_count, const ImPlot3DSpec& spec = ImPlot3DSpec());
 
 // Plots a rectangular image in 3D defined by its center and two direction vectors (axes).
 // #center is the center of the rectangle in plot coordinates.
@@ -1113,6 +1115,11 @@ namespace ImPlot3D {
 // OBSOLETED in v0.3 -> PLANNED REMOVAL in v1.0
 IMPLOT3D_DEPRECATED(IMPLOT3D_API ImVec2 GetPlotPos());  // Renamed to GetPlotRectPos()
 IMPLOT3D_DEPRECATED(IMPLOT3D_API ImVec2 GetPlotSize()); // Renamed to GetPlotRectSize()
+
+// OBSOLETED in v0.4 -> PLANNED REMOVAL in v1.0
+// Use PlotMesh(label_id, vtx_xs, vtx_ys, vtx_zs, idx, vtx_count, idx_count, spec) instead.
+IMPLOT3D_DEPRECATED(IMPLOT3D_API void PlotMesh(const char* label_id, const ImPlot3DPoint* vtx, const unsigned int* idxs, int vtx_count,
+                                               int idx_count, const ImPlot3DSpec& spec = ImPlot3DSpec()));
 
 } // namespace ImPlot3D
 

@@ -48,6 +48,16 @@ Below is a change-log of API breaking changes only. If you are using one of the 
 When you are not sure about an old symbol or function name, try using the Search/Find function of your IDE to look for comments or references in all
 implot3d files. You can read releases logs https://github.com/brenocq/implot3d/releases for more details.
 
+- 2026/04/04 (0.4) - PlotMesh signature changed: the ImPlot3DPoint* overload is deprecated and will be removed in v1.0.
+                     A new overload accepting separate coordinate arrays (vtx_xs, vtx_ys, vtx_zs) was added, matching
+                     the pattern of PlotLine/PlotScatter/PlotTriangle and supporting Spec.Offset and Spec.Stride.
+                         ```cpp
+                         // Before
+                         ImPlot3D::PlotMesh("Mesh", vtx, idxs, vtx_count, idx_count);
+
+                         // After
+                         ImPlot3D::PlotMesh("Mesh", vtx_xs, vtx_ys, vtx_zs, idxs, vtx_count, idx_count);
+                         ```
 - 2026/02/03 (0.4) - ImPlotSpec was made the default and _only_ way of styling plot items. The SetNextXXXStyle functions have been removed.
                       - SetNextLineStyle has been removed, styling should be set via ImPlot3DSpec.
                           ```cpp

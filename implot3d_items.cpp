@@ -996,18 +996,19 @@ struct Getter3DPoints {
     const int Count;
 };
 
-struct GetterMeshTriangles {
-    GetterMeshTriangles(const ImPlot3DPoint* vtx, const unsigned int* idx, int idx_count)
-        : Vtx(vtx), Idx(idx), IdxCount(idx_count), TriCount(idx_count / 3), Count(idx_count) {}
+template <typename TGX, typename TGY, typename TGZ> struct GetterMeshTriangles {
+    GetterMeshTriangles(TGX gx, TGY gy, TGZ gz, const unsigned int* idx, int idx_count)
+        : Gx(gx), Gy(gy), Gz(gz), Idx(idx), TriCount(idx_count / 3), Count(idx_count) {}
 
     template <typename I> IMPLOT3D_INLINE ImPlot3DPoint operator()(I i) const {
         unsigned int vi = Idx[i];
-        return Vtx[vi];
+        return ImPlot3DPoint(Gx(vi), Gy(vi), Gz(vi));
     }
 
-    const ImPlot3DPoint* Vtx;
+    TGX Gx;
+    TGY Gy;
+    TGZ Gz;
     const unsigned int* Idx;
-    int IdxCount;
     int TriCount;
     int Count;
 };
@@ -1477,23 +1478,19 @@ CALL_INSTANTIATE_FOR_NUMERIC_TYPES()
 // [SECTION] PlotMesh
 //-----------------------------------------------------------------------------
 
-void PlotMesh(const char* label_id, const ImPlot3DPoint* vtx, const unsigned int* idx, int vtx_count, int idx_count, const ImPlot3DSpec& spec) {
-    Getter3DPoints getter(vtx, vtx_count);                     // Get vertices
-    GetterMeshTriangles getter_triangles(vtx, idx, idx_count); // Get triangle vertices
-
+template <typename _VtxGetter, typename _TriGetter>
+void PlotMeshEx(const char* label_id, const _VtxGetter& getter, const _TriGetter& getter_triangles, const ImPlot3DSpec& spec) {
     if (BeginItemEx(label_id, getter, spec, spec.FillColor, spec.Marker)) {
         const ImPlot3DNextItemData& n = GetItemData();
         const ImPlot3DSpec& s = n.Spec;
 
         // Render fill
-        if (getter.Count >= 3 && n.RenderFill && !ImHasFlag(spec.Flags, ImPlot3DMeshFlags_NoFill)) {
+        if (getter.Count >= 3 && n.RenderFill && !ImHasFlag(spec.Flags, ImPlot3DMeshFlags_NoFill))
             RenderPrimitives2<RendererTriangleFill>(getter_triangles, GetterConstColor(ImGui::GetColorU32(s.FillColor)));
-        }
 
         // Render lines
-        if (getter.Count >= 2 && n.RenderLine && !n.IsAutoLine && !ImHasFlag(spec.Flags, ImPlot3DMeshFlags_NoLines)) {
-            RenderPrimitives2<RendererLineSegments>(GetterTriangleLines<GetterMeshTriangles>(getter_triangles), GetterConstColor(ImGui::GetColorU32(s.LineColor)), s.LineWeight);
-        }
+        if (getter.Count >= 2 && n.RenderLine && !n.IsAutoLine && !ImHasFlag(spec.Flags, ImPlot3DMeshFlags_NoLines))
+            RenderPrimitives2<RendererLineSegments>(GetterTriangleLines<_TriGetter>(getter_triangles), GetterConstColor(ImGui::GetColorU32(s.LineColor)), s.LineWeight);
 
         // Render markers
         if (s.Marker != ImPlot3DMarker_None && !ImHasFlag(spec.Flags, ImPlot3DMeshFlags_NoMarkers)) {
@@ -1504,6 +1501,34 @@ void PlotMesh(const char* label_id, const ImPlot3DPoint* vtx, const unsigned int
 
         EndItem();
     }
+}
+
+IMPLOT3D_TMP void PlotMesh(const char* label_id, const T* vtx_xs, const T* vtx_ys, const T* vtx_zs, const unsigned int* idxs, int vtx_count,
+                           int idx_count, const ImPlot3DSpec& spec) {
+    if (vtx_count < 3 || idx_count < 3)
+        return;
+    int stride = Stride<T>(spec);
+    GetterXYZ<IndexerIdx<T>, IndexerIdx<T>, IndexerIdx<T>> getter(IndexerIdx<T>(vtx_xs, vtx_count, spec.Offset, stride),
+                                                                  IndexerIdx<T>(vtx_ys, vtx_count, spec.Offset, stride),
+                                                                  IndexerIdx<T>(vtx_zs, vtx_count, spec.Offset, stride), vtx_count);
+    GetterMeshTriangles<IndexerIdx<T>, IndexerIdx<T>, IndexerIdx<T>> getter_triangles(IndexerIdx<T>(vtx_xs, vtx_count, spec.Offset, stride),
+                                                                                      IndexerIdx<T>(vtx_ys, vtx_count, spec.Offset, stride),
+                                                                                      IndexerIdx<T>(vtx_zs, vtx_count, spec.Offset, stride), idxs,
+                                                                                      idx_count);
+    PlotMeshEx(label_id, getter, getter_triangles, spec);
+}
+
+#define INSTANTIATE_MACRO(T)                                                                                                                         \
+    template IMPLOT3D_API void PlotMesh<T>(const char* label_id, const T* vtx_xs, const T* vtx_ys, const T* vtx_zs, const unsigned int* idxs,       \
+                                           int vtx_count, int idx_count, const ImPlot3DSpec& spec);
+CALL_INSTANTIATE_FOR_NUMERIC_TYPES()
+#undef INSTANTIATE_MACRO
+
+void PlotMesh(const char* label_id, const ImPlot3DPoint* vtx, const unsigned int* idxs, int vtx_count, int idx_count, const ImPlot3DSpec& spec) {
+    ImPlot3DSpec s = spec;
+    s.Offset = 0;
+    s.Stride = (int)sizeof(ImPlot3DPoint);
+    PlotMesh<double>(label_id, &vtx->x, &vtx->y, &vtx->z, idxs, vtx_count, idx_count, s);
 }
 
 //-----------------------------------------------------------------------------

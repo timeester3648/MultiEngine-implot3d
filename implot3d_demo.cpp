@@ -474,6 +474,7 @@ void DemoMeshPlots() {
 
         ImPlot3DSpec spec;
         spec.Flags = flags;
+        spec.Stride = (int)sizeof(ImPlot3DPoint);
         // Set fill style
         spec.FillColor = fill_color;
         // Set line style
@@ -486,11 +487,11 @@ void DemoMeshPlots() {
 
         // Plot mesh
         if (mesh_id == 0)
-            ImPlot3D::PlotMesh("Duck", duck_vtx, duck_idx, DUCK_VTX_COUNT, DUCK_IDX_COUNT, spec);
+            ImPlot3D::PlotMesh("Duck", &duck_vtx[0].x, &duck_vtx[0].y, &duck_vtx[0].z, duck_idx, DUCK_VTX_COUNT, DUCK_IDX_COUNT, spec);
         else if (mesh_id == 1)
-            ImPlot3D::PlotMesh("Sphere", sphere_vtx, sphere_idx, SPHERE_VTX_COUNT, SPHERE_IDX_COUNT, spec);
+            ImPlot3D::PlotMesh("Sphere", &sphere_vtx[0].x, &sphere_vtx[0].y, &sphere_vtx[0].z, sphere_idx, SPHERE_VTX_COUNT, SPHERE_IDX_COUNT, spec);
         else if (mesh_id == 2)
-            ImPlot3D::PlotMesh("Cube", cube_vtx, cube_idx, CUBE_VTX_COUNT, CUBE_IDX_COUNT, spec);
+            ImPlot3D::PlotMesh("Cube", &cube_vtx[0].x, &cube_vtx[0].y, &cube_vtx[0].z, cube_idx, CUBE_VTX_COUNT, CUBE_IDX_COUNT, spec);
 
         ImPlot3D::EndPlot();
     }
