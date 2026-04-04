@@ -47,7 +47,7 @@ target_link_libraries(imgui PUBLIC glfw OpenGL::GL)
 FetchContent_Declare(
     implot
     GIT_REPOSITORY "https://github.com/epezent/implot"
-    GIT_TAG "v0.17"
+    GIT_TAG "feat/spec-colors"
     GIT_PROGRESS TRUE
 )
 FetchContent_MakeAvailable(implot)
