@@ -164,6 +164,57 @@ void DemoScatterPlots() {
     }
 }
 
+void Demo_PerIndexColors() {
+    IMGUI_DEMO_MARKER("Plots/Per-Index Colors");
+
+    // Colorful Scatter
+    srand(0);
+    static float xs_scatter1[100], ys_scatter1[100], zs_scatter1[100];
+    static ImU32 colors_scatter1_fill[100], colors_scatter1_line[100];
+    static float sizes_scatter1[100];
+    for (int i = 0; i < 100; ++i) {
+        xs_scatter1[i] = i * 0.01f;
+        ys_scatter1[i] = xs_scatter1[i] + 0.1f * ((float)rand() / (float)RAND_MAX);
+        zs_scatter1[i] = xs_scatter1[i] + 0.1f * ((float)rand() / (float)RAND_MAX);
+        // Rainbow hue colors
+        float hue = i / 99.0f;
+        colors_scatter1_fill[i] = ImColor::HSV(hue, 0.8f, 0.9f);
+        colors_scatter1_line[i] = ImColor::HSV(hue, 0.9f, 0.7f);
+        // Random sizes between 2 and 6
+        sizes_scatter1[i] = 2.0f + 4.0f * ((float)rand() / (float)RAND_MAX);
+    }
+    static float xs_scatter2[50], ys_scatter2[50], zs_scatter2[50];
+    static ImU32 colors_scatter2[50];
+    static float sizes_scatter2[50];
+    for (int i = 0; i < 50; ++i) {
+        xs_scatter2[i] = 0.25f + 0.2f * ((float)rand() / (float)RAND_MAX);
+        ys_scatter2[i] = 0.50f + 0.2f * ((float)rand() / (float)RAND_MAX);
+        zs_scatter2[i] = 0.75f + 0.2f * ((float)rand() / (float)RAND_MAX);
+        // Colormap colors (Viridis)
+        float t = i / 49.0f;
+        ImVec4 color = ImPlot3D::SampleColormap(t, ImPlot3DColormap_Viridis);
+        colors_scatter2[i] = ImGui::GetColorU32(color);
+        // Random sizes between 2 and 6
+        sizes_scatter2[i] = 2.0f + 4.0f * ((float)rand() / (float)RAND_MAX);
+    }
+
+    if (ImPlot3D::BeginPlot("Colorful Scatter")) {
+        ImPlot3D::PlotScatter("Data 1", xs_scatter1, ys_scatter1, zs_scatter1, 100, {
+            ImPlot3DProp_MarkerFillColors, colors_scatter1_fill,
+            ImPlot3DProp_MarkerLineColors, colors_scatter1_line,
+            ImPlot3DProp_MarkerSizes,      sizes_scatter1
+        });
+        ImPlot3D::PlotScatter("Data 2", xs_scatter2, ys_scatter2, zs_scatter2, 50, {
+            ImPlot3DProp_Marker,           ImPlot3DMarker_Square,
+            ImPlot3DProp_MarkerFillColors, colors_scatter2,
+            ImPlot3DProp_MarkerLineColors, colors_scatter2,
+            ImPlot3DProp_MarkerSizes,      sizes_scatter2,
+            ImPlot3DProp_FillAlpha,        0.5f
+        });
+        ImPlot3D::EndPlot();
+    }
+}
+
 void DemoTrianglePlots() {
     IMGUI_DEMO_MARKER("Plots/Triangle Plots");
     // Pyramid coordinates
@@ -1631,6 +1682,7 @@ void ShowAllDemos() {
             ImGui::SeparatorText("Plot Types");
             DemoHeader("Line Plots", DemoLinePlots);
             DemoHeader("Scatter Plots", DemoScatterPlots);
+            DemoHeader("Per-Index Colors", Demo_PerIndexColors);
             DemoHeader("Triangle Plots", DemoTrianglePlots);
             DemoHeader("Quad Plots", DemoQuadPlots);
             DemoHeader("Surface Plots", DemoSurfacePlots);

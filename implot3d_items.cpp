@@ -1195,19 +1195,49 @@ void RenderMarkers(const _Getter& getter, ImPlot3DMarker marker, float size, boo
     RenderMarkers(getter, marker, rend_fill, GetterConstColor(col_fill), rend_line, GetterConstColor(col_line), GetterConstSize(size), weight);
 }
 
+template <typename _Getter>
+void RenderColoredMarkers(const _Getter& getter, const ImPlot3DNextItemData& n) {
+    const ImPlot3DSpec& s = n.Spec;
+    const ImU32 col_line = ImGui::GetColorU32(s.MarkerLineColor);
+    const ImU32 col_fill = ImGui::GetColorU32(s.MarkerFillColor);
+    if (s.MarkerSizes != nullptr) {
+        GetterIdxSize size_getter(s.MarkerSizes, getter.Count);
+        if (s.MarkerFillColors != nullptr && s.MarkerLineColors != nullptr) {
+            RenderMarkers(getter, s.Marker, n.RenderMarkerFill, GetterIdxColor(s.MarkerFillColors, getter.Count, s.FillAlpha), n.RenderMarkerLine, GetterIdxColor(s.MarkerLineColors, getter.Count), size_getter, s.LineWeight);
+        } else if (s.MarkerFillColors != nullptr) {
+            RenderMarkers(getter, s.Marker, n.RenderMarkerFill, GetterIdxColor(s.MarkerFillColors, getter.Count, s.FillAlpha), n.RenderMarkerLine, GetterConstColor(col_line), size_getter, s.LineWeight);
+        } else if (s.MarkerLineColors != nullptr) {
+            RenderMarkers(getter, s.Marker, n.RenderMarkerFill, GetterConstColor(col_fill), n.RenderMarkerLine, GetterIdxColor(s.MarkerLineColors, getter.Count), size_getter, s.LineWeight);
+        } else {
+            RenderMarkers(getter, s.Marker, n.RenderMarkerFill, GetterConstColor(col_fill), n.RenderMarkerLine, GetterConstColor(col_line), size_getter, s.LineWeight);
+        }
+    } else {
+        GetterConstSize size_getter(s.MarkerSize);
+        if (s.MarkerFillColors != nullptr && s.MarkerLineColors != nullptr) {
+            RenderMarkers(getter, s.Marker, n.RenderMarkerFill, GetterIdxColor(s.MarkerFillColors, getter.Count, s.FillAlpha), n.RenderMarkerLine, GetterIdxColor(s.MarkerLineColors, getter.Count), size_getter, s.LineWeight);
+        } else if (s.MarkerFillColors != nullptr) {
+            RenderMarkers(getter, s.Marker, n.RenderMarkerFill, GetterIdxColor(s.MarkerFillColors, getter.Count, s.FillAlpha), n.RenderMarkerLine, GetterConstColor(col_line), size_getter, s.LineWeight);
+        } else if (s.MarkerLineColors != nullptr) {
+            RenderMarkers(getter, s.Marker, n.RenderMarkerFill, GetterConstColor(col_fill), n.RenderMarkerLine, GetterIdxColor(s.MarkerLineColors, getter.Count), size_getter, s.LineWeight);
+        } else {
+            RenderMarkers(getter, s.Marker, n.RenderMarkerFill, GetterConstColor(col_fill), n.RenderMarkerLine, GetterConstColor(col_line), size_getter, s.LineWeight);
+        }
+    }
+}
+
 //-----------------------------------------------------------------------------
 // [SECTION] PlotScatter
 //-----------------------------------------------------------------------------
 
 template <typename Getter> void PlotScatterEx(const char* label_id, const Getter& getter, const ImPlot3DSpec& spec) {
     if (BeginItemEx(label_id, getter, spec, spec.MarkerLineColor, spec.Marker)) {
-        const ImPlot3DNextItemData& n = GetItemData();
-        const ImPlot3DSpec& s = n.Spec;
-        ImPlot3DMarker marker = s.Marker == ImPlot3DMarker_None ? ImPlot3DMarker_Circle : s.Marker;
-        const ImU32 col_line = ImGui::GetColorU32(s.MarkerLineColor);
-        const ImU32 col_fill = ImGui::GetColorU32(s.MarkerFillColor);
-        if (marker != ImPlot3DMarker_None)
-            RenderMarkers<Getter>(getter, marker, s.MarkerSize, n.RenderMarkerFill, col_fill, n.RenderMarkerLine, col_line, s.LineWeight);
+        ImPlot3DContext& gp = *GImPlot3D;
+        ImPlot3DNextItemData& n = gp.NextItemData;
+        // Scatter always renders a marker; default to Circle
+        if (n.Spec.Marker == ImPlot3DMarker_None)
+            n.Spec.Marker = ImPlot3DMarker_Circle;
+        if (n.Spec.Marker != ImPlot3DMarker_None)
+            RenderColoredMarkers(getter, n);
         EndItem();
     }
 }
