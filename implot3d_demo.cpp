@@ -987,6 +987,64 @@ void Demo_PerIndexColors() {
         });
         ImPlot3D::EndPlot();
     }
+
+    // Colorful Triangles (pyramid with per-vertex fill colors)
+    static float xs_tri[18], ys_tri[18], zs_tri[18];
+    static ImU32 colors_tri[18];
+    {
+        // Apex
+        float ax = 0.0f, ay = 0.0f, az = 1.0f;
+        // Square base corners
+        float cx[4] = {-0.5f, 0.5f, 0.5f, -0.5f};
+        float cy[4] = {-0.5f, -0.5f, 0.5f, 0.5f};
+        float cz[4] = {0.0f, 0.0f, 0.0f, 0.0f};
+        int v = 0;
+        auto AddVertex = [&](float x, float y, float z) { xs_tri[v] = x; ys_tri[v] = y; zs_tri[v] = z; v++; };
+        AddVertex(ax, ay, az); AddVertex(cx[0], cy[0], cz[0]); AddVertex(cx[1], cy[1], cz[1]);
+        AddVertex(ax, ay, az); AddVertex(cx[1], cy[1], cz[1]); AddVertex(cx[2], cy[2], cz[2]);
+        AddVertex(ax, ay, az); AddVertex(cx[2], cy[2], cz[2]); AddVertex(cx[3], cy[3], cz[3]);
+        AddVertex(ax, ay, az); AddVertex(cx[3], cy[3], cz[3]); AddVertex(cx[0], cy[0], cz[0]);
+        AddVertex(cx[0], cy[0], cz[0]); AddVertex(cx[1], cy[1], cz[1]); AddVertex(cx[2], cy[2], cz[2]);
+        AddVertex(cx[0], cy[0], cz[0]); AddVertex(cx[2], cy[2], cz[2]); AddVertex(cx[3], cy[3], cz[3]);
+        // Hot colormap sampled by z: bottom (z=0) is cold, apex (z=1) is hot
+        for (int i = 0; i < 18; ++i) {
+            ImVec4 color = ImPlot3D::SampleColormap(0.5f * zs_tri[i], ImPlot3DColormap_Hot);
+            colors_tri[i] = ImGui::GetColorU32(color);
+        }
+    }
+    if (ImPlot3D::BeginPlot("Colorful Triangles")) {
+        ImPlot3D::SetupAxesLimits(-1, 1, -1, 1, -0.5, 1.5);
+        ImPlot3D::PlotTriangle("Pyramid", xs_tri, ys_tri, zs_tri, 18, {
+            ImPlot3DProp_FillColors, colors_tri,
+            ImPlot3DProp_FillAlpha,  0.8f
+        });
+        ImPlot3D::EndPlot();
+    }
+
+    // Colorful Quads (cube [0,1]^3 with per-vertex RGB colors: R=x, G=y, B=z)
+    static float xs_quad[24], ys_quad[24], zs_quad[24];
+    static ImU32 colors_quad[24];
+    {
+        // clang-format off
+        xs_quad[0]=1; ys_quad[0]=0; zs_quad[0]=0;  xs_quad[1]=1; ys_quad[1]=1; zs_quad[1]=0;  xs_quad[2]=1; ys_quad[2]=1; zs_quad[2]=1;  xs_quad[3]=1; ys_quad[3]=0; zs_quad[3]=1;
+        xs_quad[4]=0; ys_quad[4]=0; zs_quad[4]=0;  xs_quad[5]=0; ys_quad[5]=1; zs_quad[5]=0;  xs_quad[6]=0; ys_quad[6]=1; zs_quad[6]=1;  xs_quad[7]=0; ys_quad[7]=0; zs_quad[7]=1;
+        xs_quad[8]=0; ys_quad[8]=1; zs_quad[8]=0;  xs_quad[9]=1; ys_quad[9]=1; zs_quad[9]=0;  xs_quad[10]=1; ys_quad[10]=1; zs_quad[10]=1;  xs_quad[11]=0; ys_quad[11]=1; zs_quad[11]=1;
+        xs_quad[12]=0; ys_quad[12]=0; zs_quad[12]=0;  xs_quad[13]=1; ys_quad[13]=0; zs_quad[13]=0;  xs_quad[14]=1; ys_quad[14]=0; zs_quad[14]=1;  xs_quad[15]=0; ys_quad[15]=0; zs_quad[15]=1;
+        xs_quad[16]=0; ys_quad[16]=0; zs_quad[16]=1;  xs_quad[17]=1; ys_quad[17]=0; zs_quad[17]=1;  xs_quad[18]=1; ys_quad[18]=1; zs_quad[18]=1;  xs_quad[19]=0; ys_quad[19]=1; zs_quad[19]=1;
+        xs_quad[20]=0; ys_quad[20]=0; zs_quad[20]=0;  xs_quad[21]=1; ys_quad[21]=0; zs_quad[21]=0;  xs_quad[22]=1; ys_quad[22]=1; zs_quad[22]=0;  xs_quad[23]=0; ys_quad[23]=1; zs_quad[23]=0;
+        // clang-format on
+        // Color = (R=x, G=y, B=z) per vertex
+        for (int i = 0; i < 24; ++i)
+            colors_quad[i] = IM_COL32((ImU8)(xs_quad[i] * 255), (ImU8)(ys_quad[i] * 255), (ImU8)(zs_quad[i] * 255), 255);
+    }
+    if (ImPlot3D::BeginPlot("Colorful Quads")) {
+        ImPlot3D::SetupAxesLimits(-0.5, 1.5, -0.5, 1.5, -0.5, 1.5);
+        ImPlot3D::PlotQuad("Cube", xs_quad, ys_quad, zs_quad, 24, {
+            ImPlot3DProp_FillColors, colors_quad,
+            ImPlot3DProp_FillAlpha,  0.8f
+        });
+        ImPlot3D::EndPlot();
+    }
 }
 
 //-----------------------------------------------------------------------------

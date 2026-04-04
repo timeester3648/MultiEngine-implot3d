@@ -562,21 +562,19 @@ template <class _Getter, class _GetterColor> struct RendererTriangleFill : Rende
         p[1] = PlotToPixels(p_plot[1]);
         p[2] = PlotToPixels(p_plot[2]);
 
-        ImU32 col = ColGetter(prim);
-
         // 3 vertices per triangle
         draw_list_3d._VtxWritePtr[0].pos.x = p[0].x;
         draw_list_3d._VtxWritePtr[0].pos.y = p[0].y;
         draw_list_3d._VtxWritePtr[0].uv = UV;
-        draw_list_3d._VtxWritePtr[0].col = col;
+        draw_list_3d._VtxWritePtr[0].col = ColGetter(3 * prim);
         draw_list_3d._VtxWritePtr[1].pos.x = p[1].x;
         draw_list_3d._VtxWritePtr[1].pos.y = p[1].y;
         draw_list_3d._VtxWritePtr[1].uv = UV;
-        draw_list_3d._VtxWritePtr[1].col = col;
+        draw_list_3d._VtxWritePtr[1].col = ColGetter(3 * prim + 1);
         draw_list_3d._VtxWritePtr[2].pos.x = p[2].x;
         draw_list_3d._VtxWritePtr[2].pos.y = p[2].y;
         draw_list_3d._VtxWritePtr[2].uv = UV;
-        draw_list_3d._VtxWritePtr[2].col = col;
+        draw_list_3d._VtxWritePtr[2].col = ColGetter(3 * prim + 2);
         draw_list_3d._VtxWritePtr += 3;
 
         // 3 indices per triangle
@@ -622,28 +620,26 @@ template <class _Getter, class _GetterColor> struct RendererQuadFill : RendererB
         p[2] = PlotToPixels(p_plot[2]);
         p[3] = PlotToPixels(p_plot[3]);
 
-        ImU32 col = ColGetter(prim);
-
         // Add vertices for two triangles
         draw_list_3d._VtxWritePtr[0].pos.x = p[0].x;
         draw_list_3d._VtxWritePtr[0].pos.y = p[0].y;
         draw_list_3d._VtxWritePtr[0].uv = UV;
-        draw_list_3d._VtxWritePtr[0].col = col;
+        draw_list_3d._VtxWritePtr[0].col = ColGetter(4 * prim);
 
         draw_list_3d._VtxWritePtr[1].pos.x = p[1].x;
         draw_list_3d._VtxWritePtr[1].pos.y = p[1].y;
         draw_list_3d._VtxWritePtr[1].uv = UV;
-        draw_list_3d._VtxWritePtr[1].col = col;
+        draw_list_3d._VtxWritePtr[1].col = ColGetter(4 * prim + 1);
 
         draw_list_3d._VtxWritePtr[2].pos.x = p[2].x;
         draw_list_3d._VtxWritePtr[2].pos.y = p[2].y;
         draw_list_3d._VtxWritePtr[2].uv = UV;
-        draw_list_3d._VtxWritePtr[2].col = col;
+        draw_list_3d._VtxWritePtr[2].col = ColGetter(4 * prim + 2);
 
         draw_list_3d._VtxWritePtr[3].pos.x = p[3].x;
         draw_list_3d._VtxWritePtr[3].pos.y = p[3].y;
         draw_list_3d._VtxWritePtr[3].uv = UV;
-        draw_list_3d._VtxWritePtr[3].col = col;
+        draw_list_3d._VtxWritePtr[3].col = ColGetter(4 * prim + 3);
 
         draw_list_3d._VtxWritePtr += 4;
 
@@ -1333,20 +1329,23 @@ template <typename _Getter> void PlotTriangleEx(const char* label_id, const _Get
 
         // Render fill
         if (getter.Count >= 3 && n.RenderFill && !ImHasFlag(spec.Flags, ImPlot3DTriangleFlags_NoFill)) {
-            RenderPrimitives2<RendererTriangleFill>(getter, GetterConstColor(ImGui::GetColorU32(s.FillColor)));
+            if (s.FillColors != nullptr)
+                RenderPrimitives2<RendererTriangleFill>(getter, GetterIdxColor(s.FillColors, getter.Count, s.FillAlpha));
+            else
+                RenderPrimitives2<RendererTriangleFill>(getter, GetterConstColor(ImGui::GetColorU32(s.FillColor)));
         }
 
         // Render lines
         if (getter.Count >= 2 && n.RenderLine && !ImHasFlag(spec.Flags, ImPlot3DTriangleFlags_NoLines)) {
-            RenderPrimitives2<RendererLineSegments>(GetterTriangleLines<_Getter>(getter), GetterConstColor(ImGui::GetColorU32(s.LineColor)), s.LineWeight);
+            if (s.LineColors != nullptr)
+                RenderPrimitives2<RendererLineSegments>(GetterTriangleLines<_Getter>(getter), GetterIdxColor(s.LineColors, getter.Count), s.LineWeight);
+            else
+                RenderPrimitives2<RendererLineSegments>(GetterTriangleLines<_Getter>(getter), GetterConstColor(ImGui::GetColorU32(s.LineColor)), s.LineWeight);
         }
 
         // Render markers
-        if (s.Marker != ImPlot3DMarker_None && !ImHasFlag(spec.Flags, ImPlot3DTriangleFlags_NoMarkers)) {
-            const ImU32 col_line = ImGui::GetColorU32(s.MarkerLineColor);
-            const ImU32 col_fill = ImGui::GetColorU32(s.MarkerFillColor);
-            RenderMarkers<_Getter>(getter, s.Marker, s.MarkerSize, n.RenderMarkerFill, col_fill, n.RenderMarkerLine, col_line, s.LineWeight);
-        }
+        if (s.Marker != ImPlot3DMarker_None && !ImHasFlag(spec.Flags, ImPlot3DTriangleFlags_NoMarkers))
+            RenderColoredMarkers(getter, n);
 
         EndItem();
     }
@@ -1378,20 +1377,23 @@ template <typename _Getter> void PlotQuadEx(const char* label_id, const _Getter&
 
         // Render fill
         if (getter.Count >= 4 && n.RenderFill && !ImHasFlag(spec.Flags, ImPlot3DQuadFlags_NoFill)) {
-            RenderPrimitives2<RendererQuadFill>(getter, GetterConstColor(ImGui::GetColorU32(s.FillColor)));
+            if (s.FillColors != nullptr)
+                RenderPrimitives2<RendererQuadFill>(getter, GetterIdxColor(s.FillColors, getter.Count, s.FillAlpha));
+            else
+                RenderPrimitives2<RendererQuadFill>(getter, GetterConstColor(ImGui::GetColorU32(s.FillColor)));
         }
 
         // Render lines
         if (getter.Count >= 2 && n.RenderLine && !ImHasFlag(spec.Flags, ImPlot3DQuadFlags_NoLines)) {
-            RenderPrimitives2<RendererLineSegments>(GetterQuadLines<_Getter>(getter), GetterConstColor(ImGui::GetColorU32(s.LineColor)), s.LineWeight);
+            if (s.LineColors != nullptr)
+                RenderPrimitives2<RendererLineSegments>(GetterQuadLines<_Getter>(getter), GetterIdxColor(s.LineColors, getter.Count), s.LineWeight);
+            else
+                RenderPrimitives2<RendererLineSegments>(GetterQuadLines<_Getter>(getter), GetterConstColor(ImGui::GetColorU32(s.LineColor)), s.LineWeight);
         }
 
         // Render markers
-        if (s.Marker != ImPlot3DMarker_None && !ImHasFlag(spec.Flags, ImPlot3DQuadFlags_NoMarkers)) {
-            const ImU32 col_line = ImGui::GetColorU32(s.MarkerLineColor);
-            const ImU32 col_fill = ImGui::GetColorU32(s.MarkerFillColor);
-            RenderMarkers<_Getter>(getter, s.Marker, s.MarkerSize, n.RenderMarkerFill, col_fill, n.RenderMarkerLine, col_line, s.LineWeight);
-        }
+        if (s.Marker != ImPlot3DMarker_None && !ImHasFlag(spec.Flags, ImPlot3DQuadFlags_NoMarkers))
+            RenderColoredMarkers(getter, n);
 
         EndItem();
     }
