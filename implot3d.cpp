@@ -630,8 +630,9 @@ ImVec2 ComputeEdgeOutwardDir(const ImVec2& p0, const ImVec2& p1, const ImVec2& b
 float ComputeMaxTickLabelExtent(const ImPlot3DAxis& axis);
 
 // Spacing constants for axis tick labels and axis labels
-static const float AXIS_TICK_INNER_PAD = 5.0f; // gap between axis edge and inner edge of tick labels
-static const float AXIS_LABEL_PAD = 10.0f;     // gap between tick label outer edge and axis label center
+static const float AXIS_TICK_INNER_PAD = 5.0f;  // gap between axis edge and inner edge of tick labels
+static const float AXIS_LABEL_PAD      = 10.0f; // gap between tick label outer edge and axis label center
+static const float AXIS_RECT_MIN_WIDTH = 40.0f; // minimum hover rect width when labels are absent
 
 // Computes the total outward width of the hover rect for an axis
 float ComputeAxisHoverWidth(const ImPlot3DAxis& axis) {
@@ -641,7 +642,7 @@ float ComputeAxisHoverWidth(const ImPlot3DAxis& axis) {
         ImVec2 label_size = ImGui::CalcTextSize(axis.GetLabel());
         w += AXIS_LABEL_PAD + label_size.y * 0.5f;
     }
-    return w;
+    return ImMax(w, AXIS_RECT_MIN_WIDTH);
 }
 
 int GetMouseOverAxis(const ImPlot3DPlot& plot, const ImVec2* corners_pix, const int plane_2d, const int axis_corners[3][2], int* edge_out = nullptr) {
