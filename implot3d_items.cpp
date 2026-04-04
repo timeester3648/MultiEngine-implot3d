@@ -1267,28 +1267,42 @@ template <typename _Getter> void PlotLineEx(const char* label_id, const _Getter&
         const ImPlot3DSpec& s = n.Spec;
 
         if (getter.Count >= 2 && n.RenderLine) {
-            const GetterConstColor col_line(ImGui::GetColorU32(s.LineColor));
             if (ImHasFlag(spec.Flags, ImPlot3DLineFlags_Segments)) {
-                RenderPrimitives2<RendererLineSegments>(getter, col_line, s.LineWeight);
+                if (s.LineColors != nullptr) {
+                    RenderPrimitives2<RendererLineSegments>(getter, GetterIdxColor(s.LineColors, getter.Count), s.LineWeight);
+                } else {
+                    RenderPrimitives2<RendererLineSegments>(getter, GetterConstColor(ImGui::GetColorU32(s.LineColor)), s.LineWeight);
+                }
             } else if (ImHasFlag(spec.Flags, ImPlot3DLineFlags_Loop)) {
-                if (ImHasFlag(spec.Flags, ImPlot3DLineFlags_SkipNaN))
-                    RenderPrimitives2<RendererLineStripSkip>(GetterLoop<_Getter>(getter), col_line, s.LineWeight);
-                else
-                    RenderPrimitives2<RendererLineStrip>(GetterLoop<_Getter>(getter), col_line, s.LineWeight);
+                if (s.LineColors != nullptr) {
+                    if (ImHasFlag(spec.Flags, ImPlot3DLineFlags_SkipNaN))
+                        RenderPrimitives2<RendererLineStripSkip>(GetterLoop<_Getter>(getter), GetterIdxColor(s.LineColors, getter.Count), s.LineWeight);
+                    else
+                        RenderPrimitives2<RendererLineStrip>(GetterLoop<_Getter>(getter), GetterIdxColor(s.LineColors, getter.Count), s.LineWeight);
+                } else {
+                    if (ImHasFlag(spec.Flags, ImPlot3DLineFlags_SkipNaN))
+                        RenderPrimitives2<RendererLineStripSkip>(GetterLoop<_Getter>(getter), GetterConstColor(ImGui::GetColorU32(s.LineColor)), s.LineWeight);
+                    else
+                        RenderPrimitives2<RendererLineStrip>(GetterLoop<_Getter>(getter), GetterConstColor(ImGui::GetColorU32(s.LineColor)), s.LineWeight);
+                }
             } else {
-                if (ImHasFlag(spec.Flags, ImPlot3DLineFlags_SkipNaN))
-                    RenderPrimitives2<RendererLineStripSkip>(getter, col_line, s.LineWeight);
-                else
-                    RenderPrimitives2<RendererLineStrip>(getter, col_line, s.LineWeight);
+                if (s.LineColors != nullptr) {
+                    if (ImHasFlag(spec.Flags, ImPlot3DLineFlags_SkipNaN))
+                        RenderPrimitives2<RendererLineStripSkip>(getter, GetterIdxColor(s.LineColors, getter.Count), s.LineWeight);
+                    else
+                        RenderPrimitives2<RendererLineStrip>(getter, GetterIdxColor(s.LineColors, getter.Count), s.LineWeight);
+                } else {
+                    if (ImHasFlag(spec.Flags, ImPlot3DLineFlags_SkipNaN))
+                        RenderPrimitives2<RendererLineStripSkip>(getter, GetterConstColor(ImGui::GetColorU32(s.LineColor)), s.LineWeight);
+                    else
+                        RenderPrimitives2<RendererLineStrip>(getter, GetterConstColor(ImGui::GetColorU32(s.LineColor)), s.LineWeight);
+                }
             }
         }
 
         // Render markers
-        if (s.Marker != ImPlot3DMarker_None) {
-            const ImU32 col_line = ImGui::GetColorU32(s.MarkerLineColor);
-            const ImU32 col_fill = ImGui::GetColorU32(s.MarkerFillColor);
-            RenderMarkers<_Getter>(getter, s.Marker, s.MarkerSize, n.RenderMarkerFill, col_fill, n.RenderMarkerLine, col_line, s.LineWeight);
-        }
+        if (s.Marker != ImPlot3DMarker_None)
+            RenderColoredMarkers(getter, n);
         EndItem();
     }
 }

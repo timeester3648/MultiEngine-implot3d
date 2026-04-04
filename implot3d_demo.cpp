@@ -164,57 +164,6 @@ void DemoScatterPlots() {
     }
 }
 
-void Demo_PerIndexColors() {
-    IMGUI_DEMO_MARKER("Plots/Per-Index Colors");
-
-    // Colorful Scatter
-    srand(0);
-    static float xs_scatter1[100], ys_scatter1[100], zs_scatter1[100];
-    static ImU32 colors_scatter1_fill[100], colors_scatter1_line[100];
-    static float sizes_scatter1[100];
-    for (int i = 0; i < 100; ++i) {
-        xs_scatter1[i] = i * 0.01f;
-        ys_scatter1[i] = xs_scatter1[i] + 0.1f * ((float)rand() / (float)RAND_MAX);
-        zs_scatter1[i] = xs_scatter1[i] + 0.1f * ((float)rand() / (float)RAND_MAX);
-        // Rainbow hue colors
-        float hue = i / 99.0f;
-        colors_scatter1_fill[i] = ImColor::HSV(hue, 0.8f, 0.9f);
-        colors_scatter1_line[i] = ImColor::HSV(hue, 0.9f, 0.7f);
-        // Random sizes between 2 and 6
-        sizes_scatter1[i] = 2.0f + 4.0f * ((float)rand() / (float)RAND_MAX);
-    }
-    static float xs_scatter2[50], ys_scatter2[50], zs_scatter2[50];
-    static ImU32 colors_scatter2[50];
-    static float sizes_scatter2[50];
-    for (int i = 0; i < 50; ++i) {
-        xs_scatter2[i] = 0.25f + 0.2f * ((float)rand() / (float)RAND_MAX);
-        ys_scatter2[i] = 0.50f + 0.2f * ((float)rand() / (float)RAND_MAX);
-        zs_scatter2[i] = 0.75f + 0.2f * ((float)rand() / (float)RAND_MAX);
-        // Colormap colors (Viridis)
-        float t = i / 49.0f;
-        ImVec4 color = ImPlot3D::SampleColormap(t, ImPlot3DColormap_Viridis);
-        colors_scatter2[i] = ImGui::GetColorU32(color);
-        // Random sizes between 2 and 6
-        sizes_scatter2[i] = 2.0f + 4.0f * ((float)rand() / (float)RAND_MAX);
-    }
-
-    if (ImPlot3D::BeginPlot("Colorful Scatter")) {
-        ImPlot3D::PlotScatter("Data 1", xs_scatter1, ys_scatter1, zs_scatter1, 100, {
-            ImPlot3DProp_MarkerFillColors, colors_scatter1_fill,
-            ImPlot3DProp_MarkerLineColors, colors_scatter1_line,
-            ImPlot3DProp_MarkerSizes,      sizes_scatter1
-        });
-        ImPlot3D::PlotScatter("Data 2", xs_scatter2, ys_scatter2, zs_scatter2, 50, {
-            ImPlot3DProp_Marker,           ImPlot3DMarker_Square,
-            ImPlot3DProp_MarkerFillColors, colors_scatter2,
-            ImPlot3DProp_MarkerLineColors, colors_scatter2,
-            ImPlot3DProp_MarkerSizes,      sizes_scatter2,
-            ImPlot3DProp_FillAlpha,        0.5f
-        });
-        ImPlot3D::EndPlot();
-    }
-}
-
 void DemoTrianglePlots() {
     IMGUI_DEMO_MARKER("Plots/Triangle Plots");
     // Pyramid coordinates
@@ -953,6 +902,93 @@ void DemoNaNValues() {
     }
 }
 
+void Demo_PerIndexColors() {
+    IMGUI_DEMO_MARKER("Plots/Per-Index Colors");
+
+    // Colorful Lines
+    static float xs1[1001], ys1[1001], zs1[1001];
+    static ImU32 colors1[1001];
+    for (int i = 0; i < 1001; ++i) {
+        xs1[i] = i * 0.001f;
+        ys1[i] = 0.5f + 0.5f * sinf(50 * (xs1[i] + (float)ImGui::GetTime() / 10));
+        zs1[i] = 0.5f + 0.5f * cosf(50 * (xs1[i] + (float)ImGui::GetTime() / 10));
+        // Rainbow colors
+        float hue = (float)i / 1000.0f;
+        colors1[i] = ImColor::HSV(hue, 0.8f, 0.9f);
+    }
+    static float xs2[20], ys2[20], zs2[20];
+    static ImU32 colors2[20];
+    for (int i = 0; i < 20; ++i) {
+        xs2[i] = i * 1 / 19.0f;
+        ys2[i] = xs2[i] * xs2[i];
+        zs2[i] = xs2[i] * ys2[i];
+        // Colormap colors (Viridis)
+        float t = i / 19.0f;
+        ImVec4 color = ImPlot3D::SampleColormap(t, ImPlot3DColormap_Viridis);
+        colors2[i] = ImGui::GetColorU32(color);
+    }
+    if (ImPlot3D::BeginPlot("Colorful Lines")) {
+        ImPlot3D::PlotLine("f(x)", xs1, ys1, zs1, 1001, {
+            ImPlot3DProp_LineColors, colors1
+        });
+        ImPlot3D::PlotLine("g(x)", xs2, ys2, zs2, 20, {
+            ImPlot3DProp_Marker,           ImPlot3DMarker_Circle,
+            ImPlot3DProp_Flags,            (int)ImPlot3DLineFlags_Segments,
+            ImPlot3DProp_LineColors,       colors2,
+            ImPlot3DProp_MarkerFillColors, colors2,
+            ImPlot3DProp_MarkerLineColors, colors2
+        });
+        ImPlot3D::EndPlot();
+    }
+
+    // Colorful Scatter
+    srand(0);
+    static float xs_scatter1[100], ys_scatter1[100], zs_scatter1[100];
+    static ImU32 colors_scatter1_fill[100], colors_scatter1_line[100];
+    static float sizes_scatter1[100];
+    for (int i = 0; i < 100; ++i) {
+        xs_scatter1[i] = i * 0.01f;
+        ys_scatter1[i] = xs_scatter1[i] + 0.1f * ((float)rand() / (float)RAND_MAX);
+        zs_scatter1[i] = xs_scatter1[i] + 0.1f * ((float)rand() / (float)RAND_MAX);
+        // Rainbow hue colors
+        float hue = i / 99.0f;
+        colors_scatter1_fill[i] = ImColor::HSV(hue, 0.8f, 0.9f);
+        colors_scatter1_line[i] = ImColor::HSV(hue, 0.9f, 0.7f);
+        // Random sizes between 2 and 6
+        sizes_scatter1[i] = 2.0f + 4.0f * ((float)rand() / (float)RAND_MAX);
+    }
+    static float xs_scatter2[50], ys_scatter2[50], zs_scatter2[50];
+    static ImU32 colors_scatter2[50];
+    static float sizes_scatter2[50];
+    for (int i = 0; i < 50; ++i) {
+        xs_scatter2[i] = 0.25f + 0.2f * ((float)rand() / (float)RAND_MAX);
+        ys_scatter2[i] = 0.50f + 0.2f * ((float)rand() / (float)RAND_MAX);
+        zs_scatter2[i] = 0.75f + 0.2f * ((float)rand() / (float)RAND_MAX);
+        // Colormap colors (Viridis)
+        float t = i / 49.0f;
+        ImVec4 color = ImPlot3D::SampleColormap(t, ImPlot3DColormap_Viridis);
+        colors_scatter2[i] = ImGui::GetColorU32(color);
+        // Random sizes between 2 and 6
+        sizes_scatter2[i] = 2.0f + 4.0f * ((float)rand() / (float)RAND_MAX);
+    }
+
+    if (ImPlot3D::BeginPlot("Colorful Scatter")) {
+        ImPlot3D::PlotScatter("Data 1", xs_scatter1, ys_scatter1, zs_scatter1, 100, {
+            ImPlot3DProp_MarkerFillColors, colors_scatter1_fill,
+            ImPlot3DProp_MarkerLineColors, colors_scatter1_line,
+            ImPlot3DProp_MarkerSizes,      sizes_scatter1
+        });
+        ImPlot3D::PlotScatter("Data 2", xs_scatter2, ys_scatter2, zs_scatter2, 50, {
+            ImPlot3DProp_Marker,           ImPlot3DMarker_Square,
+            ImPlot3DProp_MarkerFillColors, colors_scatter2,
+            ImPlot3DProp_MarkerLineColors, colors_scatter2,
+            ImPlot3DProp_MarkerSizes,      sizes_scatter2,
+            ImPlot3DProp_FillAlpha,        0.5f
+        });
+        ImPlot3D::EndPlot();
+    }
+}
+
 //-----------------------------------------------------------------------------
 // [SECTION] Axes
 //-----------------------------------------------------------------------------
@@ -1682,7 +1718,6 @@ void ShowAllDemos() {
             ImGui::SeparatorText("Plot Types");
             DemoHeader("Line Plots", DemoLinePlots);
             DemoHeader("Scatter Plots", DemoScatterPlots);
-            DemoHeader("Per-Index Colors", Demo_PerIndexColors);
             DemoHeader("Triangle Plots", DemoTrianglePlots);
             DemoHeader("Quad Plots", DemoQuadPlots);
             DemoHeader("Surface Plots", DemoSurfacePlots);
@@ -1697,6 +1732,7 @@ void ShowAllDemos() {
             DemoHeader("Legend Options", DemoLegendOptions);
             DemoHeader("Markers and Text", DemoMarkersAndText);
             DemoHeader("NaN Values", DemoNaNValues);
+            DemoHeader("Per-Index Colors", Demo_PerIndexColors);
             ImGui::EndTabItem();
         }
         if (ImGui::BeginTabItem("Axes")) {
