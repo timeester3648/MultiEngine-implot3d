@@ -750,11 +750,12 @@ void RenderAxisRects(ImDrawList* draw_list, const ImPlot3DPlot& plot, const ImVe
         ImVec2 outward_dir = ComputeEdgeOutwardDir(p0, p1, box_center);
         float hover_width = ComputeAxisHoverWidth(axis);
 
-        // Determine color based on state
+        // Determine color based on state:
+        // Active only when the drag started on this axis rect (HeldEdgeIdx set), not on a plane or outside.
         ImU32 col;
-        if (axis.Held)
+        if (axis.Held && plot.HeldEdgeIdx != -1)
             col = axis.ColorAct;
-        else if (axis_idx == hovered_axis)
+        else if (axis_idx == hovered_axis && !plot.Held)
             col = axis.ColorHov;
         else
             col = axis.ColorBg;
