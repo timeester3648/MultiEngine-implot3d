@@ -1485,19 +1485,24 @@ void PlotMeshEx(const char* label_id, const _VtxGetter& getter, const _TriGetter
         const ImPlot3DSpec& s = n.Spec;
 
         // Render fill
-        if (getter.Count >= 3 && n.RenderFill && !ImHasFlag(spec.Flags, ImPlot3DMeshFlags_NoFill))
-            RenderPrimitives2<RendererTriangleFill>(getter_triangles, GetterConstColor(ImGui::GetColorU32(s.FillColor)));
+        if (getter.Count >= 3 && n.RenderFill && !ImHasFlag(spec.Flags, ImPlot3DMeshFlags_NoFill)) {
+            if (s.FillColors != nullptr)
+                RenderPrimitives2<RendererTriangleFill>(getter_triangles, GetterIdxColor(s.FillColors, getter_triangles.Count, s.FillAlpha));
+            else
+                RenderPrimitives2<RendererTriangleFill>(getter_triangles, GetterConstColor(ImGui::GetColorU32(s.FillColor)));
+        }
 
         // Render lines
-        if (getter.Count >= 2 && n.RenderLine && !n.IsAutoLine && !ImHasFlag(spec.Flags, ImPlot3DMeshFlags_NoLines))
-            RenderPrimitives2<RendererLineSegments>(GetterTriangleLines<_TriGetter>(getter_triangles), GetterConstColor(ImGui::GetColorU32(s.LineColor)), s.LineWeight);
+        if (getter.Count >= 2 && n.RenderLine && !n.IsAutoLine && !ImHasFlag(spec.Flags, ImPlot3DMeshFlags_NoLines)) {
+            if (s.LineColors != nullptr)
+                RenderPrimitives2<RendererLineSegments>(GetterTriangleLines<_TriGetter>(getter_triangles), GetterIdxColor(s.LineColors, getter_triangles.Count), s.LineWeight);
+            else
+                RenderPrimitives2<RendererLineSegments>(GetterTriangleLines<_TriGetter>(getter_triangles), GetterConstColor(ImGui::GetColorU32(s.LineColor)), s.LineWeight);
+        }
 
         // Render markers
-        if (s.Marker != ImPlot3DMarker_None && !ImHasFlag(spec.Flags, ImPlot3DMeshFlags_NoMarkers)) {
-            const ImU32 col_line = ImGui::GetColorU32(s.MarkerLineColor);
-            const ImU32 col_fill = ImGui::GetColorU32(s.MarkerFillColor);
-            RenderMarkers(getter, s.Marker, s.MarkerSize, n.RenderMarkerFill, col_fill, n.RenderMarkerLine, col_line, s.LineWeight);
-        }
+        if (s.Marker != ImPlot3DMarker_None && !ImHasFlag(spec.Flags, ImPlot3DMeshFlags_NoMarkers))
+            RenderColoredMarkers(getter, n);
 
         EndItem();
     }

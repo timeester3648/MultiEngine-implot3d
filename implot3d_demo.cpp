@@ -1063,6 +1063,74 @@ void Demo_PerIndexColors() {
         });
         ImPlot3D::EndPlot();
     }
+
+    // Gouraud-shaded Duck (yellow duck lit by a point light with ambient)
+    // Per-vertex normals are computed once, then mapped to index-buffer slots so the GPU
+    // interpolates colors across each triangle (Gouraud shading).
+    static ImU32 duck_fill_colors[DUCK_IDX_COUNT];
+    static bool duck_colors_built = false;
+    if (!duck_colors_built) {
+        // Accumulate area-weighted face normals into each vertex
+        struct Vec3 {
+            float x, y, z;
+        };
+        auto sub3 = [](Vec3 a, Vec3 b) -> Vec3 { return {a.x - b.x, a.y - b.y, a.z - b.z}; };
+        auto add3 = [](Vec3 a, Vec3 b) -> Vec3 { return {a.x + b.x, a.y + b.y, a.z + b.z}; };
+        auto cross3 = [](Vec3 a, Vec3 b) -> Vec3 {
+            return {a.y * b.z - a.z * b.y, a.z * b.x - a.x * b.z, a.x * b.y - a.y * b.x};
+        };
+        auto dot3 = [](Vec3 a, Vec3 b) { return a.x * b.x + a.y * b.y + a.z * b.z; };
+        auto norm3 = [&dot3](Vec3 a) -> Vec3 {
+            float len = sqrtf(dot3(a, a));
+            return len > 1e-8f ? Vec3{a.x / len, a.y / len, a.z / len} : Vec3{0, 0, 1};
+        };
+
+        Vec3 vtx_normals[DUCK_VTX_COUNT] = {};
+        for (int i = 0; i < DUCK_IDX_COUNT; i += 3) {
+            unsigned int i0 = duck_idx[i], i1 = duck_idx[i + 1], i2 = duck_idx[i + 2];
+            Vec3 p0 = {(float)duck_vtx[i0].x, (float)duck_vtx[i0].y, (float)duck_vtx[i0].z};
+            Vec3 p1 = {(float)duck_vtx[i1].x, (float)duck_vtx[i1].y, (float)duck_vtx[i1].z};
+            Vec3 p2 = {(float)duck_vtx[i2].x, (float)duck_vtx[i2].y, (float)duck_vtx[i2].z};
+            Vec3 fn = cross3(sub3(p1, p0), sub3(p2, p0)); // area-weighted face normal
+            vtx_normals[i0] = add3(vtx_normals[i0], fn);
+            vtx_normals[i1] = add3(vtx_normals[i1], fn);
+            vtx_normals[i2] = add3(vtx_normals[i2], fn);
+        }
+        for (int v = 0; v < DUCK_VTX_COUNT; v++)
+            vtx_normals[v] = norm3(vtx_normals[v]);
+
+        // Lighting: yellow duck, warm point light, soft ambient
+        Vec3 light_pos = {2.0f, 2.0f, 3.0f};
+        Vec3 duck_col = {1.0f, 0.85f, 0.1f};   // yellow
+        Vec3 light_col = {1.0f, 0.95f, 0.8f};  // warm white
+        Vec3 ambient = {0.15f, 0.12f, 0.03f};  // dim warm ambient
+
+        ImU32 vtx_colors[DUCK_VTX_COUNT];
+        for (int v = 0; v < DUCK_VTX_COUNT; v++) {
+            Vec3 pos = {(float)duck_vtx[v].x, (float)duck_vtx[v].y, (float)duck_vtx[v].z};
+            Vec3 to_light = norm3(sub3(light_pos, pos));
+            float diff = ImMax(0.0f, dot3(vtx_normals[v], to_light));
+            float r = ImMin(1.0f, ambient.x + duck_col.x * light_col.x * diff);
+            float g = ImMin(1.0f, ambient.y + duck_col.y * light_col.y * diff);
+            float b = ImMin(1.0f, ambient.z + duck_col.z * light_col.z * diff);
+            vtx_colors[v] = IM_COL32((ImU8)(r * 255), (ImU8)(g * 255), (ImU8)(b * 255), 255);
+        }
+
+        // Map per-vertex colors to index-buffer slots for Gouraud interpolation
+        for (int i = 0; i < DUCK_IDX_COUNT; i++)
+            duck_fill_colors[i] = vtx_colors[duck_idx[i]];
+
+        duck_colors_built = true;
+    }
+    if (ImPlot3D::BeginPlot("Gouraud Duck")) {
+        ImPlot3D::SetupAxesLimits(-1, 1, -1, 1, -1, 1);
+        ImPlot3D::PlotMesh("Duck", &duck_vtx[0].x, &duck_vtx[0].y, &duck_vtx[0].z, duck_idx, DUCK_VTX_COUNT, DUCK_IDX_COUNT, {
+            ImPlot3DProp_Stride,     (int)sizeof(ImPlot3DPoint),
+            ImPlot3DProp_FillColors, duck_fill_colors,
+            ImPlot3DProp_Flags,      (int)ImPlot3DMeshFlags_NoLines
+        });
+        ImPlot3D::EndPlot();
+    }
 }
 
 //-----------------------------------------------------------------------------

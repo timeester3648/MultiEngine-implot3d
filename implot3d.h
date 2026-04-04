@@ -654,6 +654,13 @@ IMPLOT3D_TMP void PlotSurface(const char* label_id, const T* xs, const T* ys, co
 // Plots a 3D mesh given vertex positions as separate coordinate arrays and an index buffer.
 // Triangles are defined by the index buffer (every 3 indices form a triangle).
 // Spec.Offset and Spec.Stride apply to the vertex coordinate arrays only, not to the index buffer.
+// Color array semantics:
+//   - FillColors / LineColors:          idx_count entries, indexed by position in the index buffer.
+//                                       Each triangle has 3 consecutive color entries (one per corner).
+//                                       Setting all 3 to the same value gives flat per-triangle shading.
+//                                       Setting different values enables Gouraud shading (GPU-interpolated).
+//                                       To shade by vertex, map: FillColors[i] = vtx_colors[idxs[i]].
+//   - MarkerFillColors / MarkerLineColors: vtx_count entries, one per unique vertex.
 IMPLOT3D_TMP void PlotMesh(const char* label_id, const T* vtx_xs, const T* vtx_ys, const T* vtx_zs, const unsigned int* idxs, int vtx_count,
                            int idx_count, const ImPlot3DSpec& spec = ImPlot3DSpec());
 
