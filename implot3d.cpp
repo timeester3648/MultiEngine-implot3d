@@ -48,7 +48,6 @@ Below is a change-log of API breaking changes only. If you are using one of the 
 When you are not sure about an old symbol or function name, try using the Search/Find function of your IDE to look for comments or references in all
 implot3d files. You can read releases logs https://github.com/brenocq/implot3d/releases for more details.
 
-- 2026/02/17 (0.4) - Added ImPlot3DCol_AxisBg, ImPlot3DCol_AxisBgHovered, ImPlot3DCol_AxisBgActive colors for axis hover regions.
 - 2026/02/03 (0.4) - ImPlotSpec was made the default and _only_ way of styling plot items. The SetNextXXXStyle functions have been removed.
                       - SetNextLineStyle has been removed, styling should be set via ImPlot3DSpec.
                           ```cpp
@@ -628,7 +627,7 @@ ImVec2 ComputeEdgeOutwardDir(const ImVec2& p0, const ImVec2& p1, const ImVec2& b
 }
 
 // Forward declaration
-float ComputeMaxTickLabelExtent(const ImPlot3DAxis& axis, const ImVec2& axis_screen_dir);
+float ComputeMaxTickLabelExtent(const ImPlot3DAxis& axis);
 
 int GetMouseOverAxis(const ImPlot3DPlot& plot, const ImVec2* corners_pix, const int plane_2d, const int axis_corners[3][2], int* edge_out = nullptr) {
     const float tick_label_offset = 20.0f; // Base offset from axis to tick labels
@@ -683,22 +682,13 @@ int GetMouseOverAxis(const ImPlot3DPlot& plot, const ImVec2* corners_pix, const 
             axis_screen_dir = ImVec2(1.0f, 0.0f);
 
         // Compute hover rect width based on tick labels and axis label
-        float max_tick_extent = ComputeMaxTickLabelExtent(axis, axis_screen_dir);
+        float max_tick_extent = ComputeMaxTickLabelExtent(axis);
         float hover_width = tick_label_offset + max_tick_extent;
 
         // Add axis label extent if present
         if (axis.HasLabel()) {
-            float angle = atan2f(-axis_screen_dir.y, axis_screen_dir.x);
-            if (angle > IM_PI * 0.5f)
-                angle -= IM_PI;
-            if (angle < -IM_PI * 0.5f)
-                angle += IM_PI;
-
             ImVec2 label_size = ImGui::CalcTextSize(axis.GetLabel());
-            float cos_a = cosf(angle);
-            float sin_a = sinf(angle);
-            float label_extent = ImAbs(label_size.x * sin_a) + ImAbs(label_size.y * cos_a);
-            hover_width += axis_label_padding + label_extent * 0.5f + label_size.y * 0.5f;
+            hover_width += axis_label_padding + label_size.y * 0.5f;
         }
 
         ImVec2 p0 = corners_pix[idx0];
@@ -796,22 +786,13 @@ void RenderAxisRects(ImDrawList* draw_list, const ImPlot3DPlot& plot, const ImVe
             axis_screen_dir = ImVec2(1.0f, 0.0f);
 
         // Compute hover rect width based on tick labels and axis label
-        float max_tick_extent = ComputeMaxTickLabelExtent(axis, axis_screen_dir);
+        float max_tick_extent = ComputeMaxTickLabelExtent(axis);
         float hover_width = tick_label_offset + max_tick_extent;
 
         // Add axis label extent if present
         if (axis.HasLabel()) {
-            float angle = atan2f(-axis_screen_dir.y, axis_screen_dir.x);
-            if (angle > IM_PI * 0.5f)
-                angle -= IM_PI;
-            if (angle < -IM_PI * 0.5f)
-                angle += IM_PI;
-
             ImVec2 label_size = ImGui::CalcTextSize(axis.GetLabel());
-            float cos_a = cosf(angle);
-            float sin_a = sinf(angle);
-            float label_extent = ImAbs(label_size.x * sin_a) + ImAbs(label_size.y * cos_a);
-            hover_width += axis_label_padding + label_extent * 0.5f + label_size.y * 0.5f;
+            hover_width += axis_label_padding + label_size.y * 0.5f;
         }
 
         // Determine color based on state
@@ -1049,45 +1030,18 @@ void RenderTickMarks(ImDrawList* draw_list, const ImPlot3DPlot& plot, const ImPl
 }
 
 // Computes the maximum extent of tick labels perpendicular to the axis in screen space
-float ComputeMaxTickLabelExtent(const ImPlot3DAxis& axis, const ImVec2& axis_screen_dir) {
+float ComputeMaxTickLabelExtent(const ImPlot3DAxis& axis) {
     if (ImPlot3D::ImHasFlag(axis.Flags, ImPlot3DAxisFlags_NoTickLabels))
         return 0.0f;
 
-    // Compute angle perpendicular to axis in screen space
-    float angle = atan2f(-axis_screen_dir.y, axis_screen_dir.x) + IM_PI * 0.5f;
-
-    // Normalize angle to be between -π and π
-    if (angle > IM_PI)
-        angle -= 2 * IM_PI;
-    if (angle < -IM_PI)
-        angle += 2 * IM_PI;
-
-    // Adjust angle to keep labels upright
-    if (angle > IM_PI * 0.5f)
-        angle -= IM_PI;
-    if (angle < -IM_PI * 0.5f)
-        angle += IM_PI;
-
-    float cos_a = cosf(angle);
-    float sin_a = sinf(angle);
-
+    // Tick labels are always rendered perpendicular to the axis (in the outward direction),
+    // so LabelSize.x (the text advance width) fully contributes to the outward extent.
     float max_extent = 0.0f;
     for (int t = 0; t < axis.Ticker.TickCount(); ++t) {
         const ImPlot3DTick& tick = axis.Ticker.Ticks[t];
         if (!tick.ShowLabel)
             continue;
-
-        // The label is rendered centered at the tick position with rotation
-        // Compute the rotated bounding box extent perpendicular to the axis
-        float w = tick.LabelSize.x;
-        float h = tick.LabelSize.y;
-
-        // The extent perpendicular to the axis depends on the rotation
-        // For a rotated rectangle, the extent in the perpendicular direction is:
-        // |w * sin(angle)| + |h * cos(angle)| (half extent, since centered)
-        float extent = ImAbs(w * sin_a) + ImAbs(h * cos_a);
-        extent = extent * 0.5f + h * 0.5f; // Add half height for centering offset
-        max_extent = ImMax(max_extent, extent);
+        max_extent = ImMax(max_extent, tick.LabelSize.x * 0.5f);
     }
 
     return max_extent;
@@ -1140,8 +1094,8 @@ void RenderTickLabels(ImDrawList* draw_list, const ImPlot3DPlot& plot, const ImP
         if (ImDot(offset_dir_pix, center_to_axis_pix) < 0.0f)
             offset_dir_pix = -offset_dir_pix;
 
-        // Adjust the offset magnitude
-        float offset_magnitude = 20.0f; // TODO Calculate based on label size
+        // Offset tick labels from the axis edge (labels are centered at this distance)
+        float offset_magnitude = 20.0f;
         ImVec2 offset_pix = offset_dir_pix * offset_magnitude;
 
         // Compute angle perpendicular to axis in screen space
@@ -1233,7 +1187,7 @@ void RenderAxisLabels(ImDrawList* draw_list, const ImPlot3DPlot& plot, const ImP
             offset_dir_pix = -offset_dir_pix;
 
         // Compute max tick label extent
-        float max_tick_extent = ComputeMaxTickLabelExtent(axis, axis_screen_dir);
+        float max_tick_extent = ComputeMaxTickLabelExtent(axis);
 
         // Compute total offset: base offset + tick label extent + padding
         float total_offset = tick_label_offset + max_tick_extent + axis_label_padding;
