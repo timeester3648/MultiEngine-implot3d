@@ -630,8 +630,8 @@ ImVec2 ComputeEdgeOutwardDir(const ImVec2& p0, const ImVec2& p1, const ImVec2& b
 float ComputeMaxTickLabelExtent(const ImPlot3DAxis& axis);
 
 int GetMouseOverAxis(const ImPlot3DPlot& plot, const ImVec2* corners_pix, const int plane_2d, const int axis_corners[3][2], int* edge_out = nullptr) {
-    const float tick_label_offset = 20.0f; // Base offset from axis to tick labels
-    const float axis_label_padding = 5.0f; // Padding between tick labels and axis label
+    const float inner_pad = 5.0f;
+    const float axis_label_padding = 5.0f;
 
     ImGuiIO& io = ImGui::GetIO();
     ImVec2 mouse_pos = io.MousePos;
@@ -683,7 +683,8 @@ int GetMouseOverAxis(const ImPlot3DPlot& plot, const ImVec2* corners_pix, const 
 
         // Compute hover rect width based on tick labels and axis label
         float max_tick_extent = ComputeMaxTickLabelExtent(axis);
-        float hover_width = tick_label_offset + max_tick_extent;
+        // hover width covers: inner_pad + 2*max_tick_extent (full tick label span)
+        float hover_width = max_tick_extent + inner_pad + max_tick_extent;
 
         // Add axis label extent if present
         if (axis.HasLabel()) {
@@ -733,8 +734,8 @@ void RenderPlotBackground(ImDrawList* draw_list, const ImPlot3DPlot& plot, const
 
 void RenderAxisRects(ImDrawList* draw_list, const ImPlot3DPlot& plot, const ImVec2* corners_pix, const bool*, const int plane_2d,
                      const int axis_corners[3][2]) {
-    const float tick_label_offset = 20.0f; // Base offset from axis to tick labels
-    const float axis_label_padding = 5.0f; // Padding between tick labels and axis label
+    const float inner_pad = 5.0f;
+    const float axis_label_padding = 5.0f;
 
     int hovered_edge = -1;
     if (!plot.Held)
@@ -787,7 +788,8 @@ void RenderAxisRects(ImDrawList* draw_list, const ImPlot3DPlot& plot, const ImVe
 
         // Compute hover rect width based on tick labels and axis label
         float max_tick_extent = ComputeMaxTickLabelExtent(axis);
-        float hover_width = tick_label_offset + max_tick_extent;
+        // hover width covers: inner_pad + 2*max_tick_extent (full tick label span)
+        float hover_width = max_tick_extent + inner_pad + max_tick_extent;
 
         // Add axis label extent if present
         if (axis.HasLabel()) {
@@ -1094,8 +1096,11 @@ void RenderTickLabels(ImDrawList* draw_list, const ImPlot3DPlot& plot, const ImP
         if (ImDot(offset_dir_pix, center_to_axis_pix) < 0.0f)
             offset_dir_pix = -offset_dir_pix;
 
-        // Offset tick labels from the axis edge (labels are centered at this distance)
-        float offset_magnitude = 20.0f;
+        // Offset tick labels from the axis edge: center labels so their inner edge
+        // (facing the box) clears the axis line by inner_pad pixels.
+        const float inner_pad = 5.0f;
+        float max_tick_extent = ComputeMaxTickLabelExtent(axis);
+        float offset_magnitude = max_tick_extent + inner_pad;
         ImVec2 offset_pix = offset_dir_pix * offset_magnitude;
 
         // Compute angle perpendicular to axis in screen space
@@ -1145,8 +1150,8 @@ void RenderTickLabels(ImDrawList* draw_list, const ImPlot3DPlot& plot, const ImP
 void RenderAxisLabels(ImDrawList* draw_list, const ImPlot3DPlot& plot, const ImPlot3DPoint*, const ImVec2* corners_pix,
                       const int axis_corners[3][2]) {
     ImU32 col_ax_txt = GetStyleColorU32(ImPlot3DCol_AxisText);
-    const float tick_label_offset = 20.0f; // Base offset from axis to tick labels
-    const float axis_label_padding = 5.0f; // Padding between tick labels and axis label
+    const float inner_pad = 5.0f;       // Gap from axis edge to inner edge of tick labels
+    const float axis_label_padding = 5.0f; // Gap between tick label outer edge and axis label center
 
     for (int a = 0; a < 3; a++) {
         const ImPlot3DAxis& axis = plot.Axes[a];
@@ -1186,11 +1191,12 @@ void RenderAxisLabels(ImDrawList* draw_list, const ImPlot3DPlot& plot, const ImP
         if (ImDot(offset_dir_pix, center_to_axis_pix) < 0.0f)
             offset_dir_pix = -offset_dir_pix;
 
-        // Compute max tick label extent
+        // Compute max tick label extent (half-width of the widest label)
         float max_tick_extent = ComputeMaxTickLabelExtent(axis);
 
-        // Compute total offset: base offset + tick label extent + padding
-        float total_offset = tick_label_offset + max_tick_extent + axis_label_padding;
+        // Tick label center is at (max_tick_extent + inner_pad) from the axis edge,
+        // so the axis label center is one more max_tick_extent + padding beyond that.
+        float total_offset = max_tick_extent + inner_pad + max_tick_extent + axis_label_padding;
 
         // Position the axis label at the center of the axis, offset by the computed amount
         ImVec2 label_pos_pix = axis_center_pix + offset_dir_pix * total_offset;
