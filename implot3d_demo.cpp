@@ -1631,6 +1631,18 @@ void DemoCustomPerPointStyle() {
         initialized = true;
     }
 
+    // Precompute per-point colors and flat XYZ arrays for each torus
+    static float xs[3][400], ys[3][400], zs[3][400];
+    ImU32 point_colors[3][400];
+    for (int torus = 0; torus < 3; torus++) {
+        for (int i = 0; i < 400; i++) {
+            xs[torus][i] = torus_data[torus][i][0];
+            ys[torus][i] = torus_data[torus][i][1];
+            zs[torus][i] = torus_data[torus][i][2];
+            point_colors[torus][i] = ImGui::ColorConvertFloat4ToU32(ImPlot3D::SampleColormap(torus_data[torus][i][3], cmap));
+        }
+    }
+
     if (ImPlot3D::BeginPlot("##PerPointStyle", ImVec2(-1, 0))) {
         ImPlot3D::SetupAxes("X", "Y", "Z");
         ImPlot3D::SetupAxesLimits(-1, 1, -1, 1, -0.5, 1.5);
@@ -1647,21 +1659,14 @@ void DemoCustomPerPointStyle() {
         spec.MarkerSize = marker_size;
 
         for (int torus = 0; torus < 3; torus++) {
-            const int point_count = 400;
-            for (int i = 0; i < point_count; i++) {
-                float x = torus_data[torus][i][0];
-                float y = torus_data[torus][i][1];
-                float z = torus_data[torus][i][2];
-                float t = torus_data[torus][i][3];
-
-                // Sample colormap and set marker style
-                ImVec4 color = ImPlot3D::SampleColormap(t, cmap);
-                spec.FillColor = color;
-                spec.LineColor = color;
-                ImPlot3D::PlotScatter(labels[torus], &x, &y, &z, 1, spec);
-            }
+            spec.MarkerFillColors = point_colors[torus];
+            spec.MarkerLineColors = point_colors[torus];
+            ImPlot3D::PlotScatter(labels[torus], xs[torus], ys[torus], zs[torus], 400, spec);
             // Override legend color with PlotDummy
-            spec.LineColor = legend_colors[torus];
+            spec.MarkerFillColors = nullptr;
+            spec.MarkerLineColors = nullptr;
+            spec.MarkerFillColor = legend_colors[torus];
+            spec.MarkerLineColor = legend_colors[torus];
             ImPlot3D::PlotDummy(labels[torus], spec);
         }
 
