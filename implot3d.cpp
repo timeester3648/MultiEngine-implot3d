@@ -3991,7 +3991,7 @@ void ImPlot3DPlot::SetRange(const ImPlot3DPoint& min, const ImPlot3DPoint& max) 
 }
 
 float ImPlot3DPlot::GetViewScale() const {
-    return ImMin(PlotRect.GetWidth(), PlotRect.GetHeight()) / 1.8f * ImPlot3D::GImPlot3D->Style.ViewScaleFactor;
+    return ImMin(PlotRect.GetWidth(), PlotRect.GetHeight()) / 1.8f * GImPlot3D->Style.ViewScaleFactor;
 }
 
 ImPlot3DPoint ImPlot3DPlot::GetBoxScale() const { return ImPlot3DPoint(Axes[0].NDCSize(), Axes[1].NDCSize(), Axes[2].NDCSize()); }

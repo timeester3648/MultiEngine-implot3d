@@ -35,6 +35,7 @@
 
 #pragma once
 #include "imgui.h"
+#include "implot3dconfig.h"
 #ifndef IMGUI_DISABLE
 
 //-----------------------------------------------------------------------------
