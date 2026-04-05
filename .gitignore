@@ -43,3 +43,9 @@ cmake-build-*
 ## LLM instruction files
 CLAUDE.md
 GEMINI.md
+
+# exclude project files
+**.sln
+**.vcxproj
+**.vcxproj.user
+**.vcxproj.filters
