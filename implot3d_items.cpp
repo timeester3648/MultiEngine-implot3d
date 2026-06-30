@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: MIT
 // SPDX-FileCopyrightText: 2024-2026 Breno Cunha Queiroz
 
-// ImPlot3D v0.4
+// ImPlot3D v0.5 WIP
 
 // Acknowledgments:
 //  ImPlot3D is heavily inspired by ImPlot
@@ -1634,7 +1634,15 @@ void PlotText(const char* text, double x, double y, double z, double angle, cons
 }
 
 void PlotDummy(const char* label_id, const ImPlot3DSpec& spec) {
-    if (BeginItem(label_id, spec, spec.LineColor, spec.Marker))
+    // Pick the first non-auto color from the spec to override the legend icon color
+    ImVec4 item_col = spec.LineColor;
+    if (IsColorAuto(item_col))
+        item_col = spec.FillColor;
+    if (IsColorAuto(item_col))
+        item_col = spec.MarkerLineColor;
+    if (IsColorAuto(item_col))
+        item_col = spec.MarkerFillColor;
+    if (BeginItem(label_id, spec, item_col, spec.Marker))
         EndItem();
 }
 
